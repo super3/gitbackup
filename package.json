@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/ovsoinc/gitbackup#readme",
   "dependencies": {
+    "ioredis": "^4.11.2",
+    "iterable-ndjson": "^1.1.0",
     "ndjson": "^1.5.0"
   }
 }
