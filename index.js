@@ -9,8 +9,12 @@ async function allSubStrs (user, userIndex) {
       substr += user.charAt(i);
       //console.log(substr);
 
-      await redis.sadd(`index:${substr}:users`, userIndex);
-      console.log(`index:${substr}):users`);
+      let numRes = await redis.scard(`index:${substr}:users`);
+      if (numRes <= 5) {
+        await redis.sadd(`index:${substr}:users`, userIndex);
+        console.log(`index:${substr}):users`);
+      }
+      // console.log(`index:${substr}):users`);
   }
 }
 
