@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/ovsoinc/gitbackup/issues"
   },
-  "homepage": "https://github.com/ovsoinc/gitbackup#readme"
+  "homepage": "https://github.com/ovsoinc/gitbackup#readme",
+  "dependencies": {
+    "ndjson": "^1.5.0"
+  }
 }
