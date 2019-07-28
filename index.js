@@ -1,9 +1,9 @@
 const redis = require('./redis.js');
 const ndjson = require('iterable-ndjson')
 const fs = require('fs')
-const source = fs.createReadStream('./users.json')
+const source = fs.createReadStream('./github_users_2015.json')
 
-async function allSubStrs (user, userIndex) {
+async function allSubStrs (user) {
   substr = "";
   for (var i = 0; i < user.length; i++) {
       substr += user.charAt(i);
@@ -11,8 +11,8 @@ async function allSubStrs (user, userIndex) {
 
       let numRes = await redis.scard(`index:${substr}:users`);
       if (numRes <= 5) {
-        await redis.sadd(`index:${substr}:users`, userIndex);
-        console.log(`index:${substr}):users`);
+        await redis.sadd(`index:${substr}:users`, user);
+        //console.log(`index:${substr}):users`);
       }
       // console.log(`index:${substr}):users`);
   }
@@ -24,8 +24,6 @@ async function import_users() {
   for await (const obj of ndjson.parse(source)) {
     let user = obj.actor_login;
     console.log(`user(${userIndex}): ${user}`);
-    await redis.set(`users:${userIndex}`, user);
-
     await allSubStrs(user, userIndex);
 
     userIndex++;
