@@ -59,8 +59,9 @@ async function syncUsers(startDate) {
   var loop = startDate;
   while(loop <= endDate){
     let target = dateFormat(loop, "yyyy-mm-dd");
-    // loop throught 24 hours
+    // loop through 24 hours
     for (let i = 0; i <= 24; i++) {
+      //await axios.get(`http://data.gharchive.org/${target}-${i}.json.gz`);
       console.log(`http://data.gharchive.org/${target}-${i}.json.gz`);
     }
     var newDate = loop.setDate(loop.getDate() + 1);
