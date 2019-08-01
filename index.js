@@ -4,19 +4,20 @@ const fs = require('fs')
 
 async function indexSubStrs (user) {
   let substr = "";
+
+  // create substrings for given username (not including the username itself)
   for (var i = 0; i < user.length - 1; i++) {
       substr += user.charAt(i);
-      //console.log(substr);
 
+      // count the number of items in the index list
       let numRes = await redis.scard(`index:${substr}:users`);
 
-      // if there are 5 or less itmes 
-      if (numRes <= 5) {
-        await redis.sadd(`index:${substr}:users`, user);
-        //console.log(`index:${substr}):users`);
-      }
-      // console.log(`index:${substr}):users`);
+      // if there are 5 or less items then add substring to index list
+      if (numRes <= 5) await redis.sadd(`index:${substr}:users`, user);
   }
+
+  // always add the full username to the index
+  await redis.sadd(`index:${user}:users`, user);
 }
 
 async function import_users(usersFile) {
@@ -26,7 +27,7 @@ async function import_users(usersFile) {
   // parse usernames from file, and index them in Redis
   for await (const obj of ndjson.parse(source)) {
     let user = obj.actor_login;
-    console.log(`user(${userIndex}): ${user}`);
+    if ((userIndex % 100) == 0) console.log(`user(${userIndex}): ${user}`);
     await indexSubStrs(user);
     userIndex++;
   }
@@ -38,7 +39,7 @@ async function partial_username(input) {
   return await redis.smembers(`index:${input}:users`);
 }
 
-import_users('./sample_users.json');
+import_users('./user_dumps/sample_users.json');
 
 //import_users('./github_users_2015.json');
 //import_users('./github_users_2016.json');

@@ -61,4 +61,4 @@ typings/
 .next
 
 # username files
-users.json
+user_dumps/
