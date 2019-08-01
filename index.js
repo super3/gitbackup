@@ -1,10 +1,9 @@
+const fs = require('fs')
 const redis = require('./redis.js');
 const ndjson = require('iterable-ndjson')
-const fs = require('fs')
 
 async function indexSubStrs (user) {
   let substr = "";
-
 
   // create substrings for given username (not including the username itself)
   for (var i = 0; i < user.length - 1; i++) {
@@ -13,13 +12,12 @@ async function indexSubStrs (user) {
 
       // count the number of items in the index list
       let numRes = await redis.scard(`index:${substr}:users`);
-
       // if there are 5 or less items then add substring to index list
       if (numRes <= 5) await redis.sadd(`index:${substr}:users`, user);
   }
 
-  // TODO: Don't add again if it already exists
-  // always add the full username to the index
+  // always add the full username to the index, and since its a
+  // set there should not be any duplicates :)
   await redis.sadd(`index:${user.toLowerCase()}:users`, user);
 }
 
