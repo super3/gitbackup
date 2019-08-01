@@ -5,9 +5,11 @@ const fs = require('fs')
 async function indexSubStrs (user) {
   let substr = "";
 
+
   // create substrings for given username (not including the username itself)
   for (var i = 0; i < user.length - 1; i++) {
-      substr += user.charAt(i);
+      // convert index to lowercase, but keep results in original case
+      substr += user.toLowerCase().charAt(i);
 
       // count the number of items in the index list
       let numRes = await redis.scard(`index:${substr}:users`);
@@ -16,8 +18,9 @@ async function indexSubStrs (user) {
       if (numRes <= 5) await redis.sadd(`index:${substr}:users`, user);
   }
 
+  // TODO: Don't add again if it already exists
   // always add the full username to the index
-  await redis.sadd(`index:${user}:users`, user);
+  await redis.sadd(`index:${user.toLowerCase()}:users`, user);
 }
 
 async function import_users(usersFile) {
@@ -41,8 +44,10 @@ async function partial_username(input) {
 
 import_users('./user_dumps/sample_users.json');
 
-//import_users('./github_users_2015.json');
-//import_users('./github_users_2016.json');
-//import_users('./github_users_2017.json');
-//import_users('./github_users_2018.json');
-//import_users('./github_users_2019.json');
+//import_users('./user_dumps/github_users_2015.json'); // 1/1/2015
+//import_users('./user_dumps/github_users_2016.json');
+//import_users('./user_dumps/github_users_2017.json');
+//import_users('./user_dumps/github_users_2018.json');
+//import_users('./user_dumps/github_users_2019.json'); // 7/25/2019
+
+// TODO: Download, process, and index new usernames from gharchive.org
