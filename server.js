@@ -7,16 +7,15 @@ const router = new Router();
 const PORT = 8000;
 
 async function partialUserSearch(input) {
-	return await redis.smembers(`index:${input}:users`);
+	return redis.smembers(`index:${input}:users`);
 }
 
-router.get('/', (ctx, next) => {
+router.get('/', ctx => {
 	ctx.body = 'Hello World!';
 });
 
-router.get('/users/:partialUser', async (ctx, next) => {
-	ctx.body = await partialUserSearch('007');
-	// Ctx.body = partialUserSearch(ctx.params.partialUser);
+router.get('/users/:partialUser', async ctx => {
+	ctx.body = await partialUserSearch(ctx.params.partialUser);
 });
 
 app

@@ -32,7 +32,7 @@ async function importUsers(usersFile) {
 	// Parse usernames from file, and index them in Redis
 	for await (const obj of ndjson.parse(source)) {
 		const user = obj.actor_login;
-		if ((userIndex % 100) == 0) {
+		if ((userIndex % 100) === 0) {
 			console.log(`user(${userIndex}): ${user}`);
 		}
 
@@ -40,10 +40,10 @@ async function importUsers(usersFile) {
 		userIndex++;
 	}
 
-	process.exit(0);
+	redis.quit();
 }
 
-// ImportUsers('./user_dumps/sample_users.json');
+// importUsers('./user_dumps/sample_users.json');
 
 // importUsers('./user_dumps/github_users_2015.json'); // 1/1/2015
 // importUsers('./user_dumps/github_users_2016.json');
