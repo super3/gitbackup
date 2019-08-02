@@ -38,10 +38,6 @@ async function importUsers(usersFile) {
   process.exit(0);
 };
 
-async function partialUsername(input) {
-  return await redis.smembers(`index:${input}:users`);
-}
-
 //importUsers('./user_dumps/sample_users.json');
 
 //importUsers('./user_dumps/github_users_2015.json'); // 1/1/2015

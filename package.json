@@ -21,6 +21,8 @@
     "dateformat": "^3.0.3",
     "ioredis": "^4.11.2",
     "iterable-ndjson": "^1.1.0",
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0",
     "ndjson": "^1.5.0"
   }
 }
