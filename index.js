@@ -3,7 +3,6 @@ const axios = require('axios');
 const dateFormat = require('dateformat');
 const ndjson = require('iterable-ndjson');
 const redis = require('./redis.js');
-var zlib = require('zlib');
 
 async function indexSubStrs(user) {
 	let substr = '';
@@ -66,14 +65,12 @@ async function syncUsers(startDate) {
 		for (let i = 0; i <= 24; i++) {
 			let outputFilename = `${target}-${i}.json.gz`;
 
+			// this might not be working properly
 			console.log(`Downloading http://data.gharchive.org/${outputFilename}...`);
 			let res = await axios.get(`http://data.gharchive.org/${outputFilename}`);
-			fs.writeFileSync(`./user_dumps/${outputFilename}`, res.data);
+			fs.writeFileSync(`./user_dumps/${outputFilename}`, res);
 
-			zlib.gunzip(res.data, (error, buff) => {
-				fs.writeFileSync(`./user_dumps/test.json`, buff);
-				console.log('wrote');
-			});
+			// turn json.gz file into .json file
 
 			break; // for testing
 		}
