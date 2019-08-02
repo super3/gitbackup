@@ -3,6 +3,7 @@ const axios = require('axios');
 const dateFormat = require('dateformat');
 const ndjson = require('iterable-ndjson');
 const redis = require('./redis.js');
+var zlib = require('zlib');
 
 async function indexSubStrs(user) {
 	let substr = '';
@@ -45,6 +46,7 @@ async function importUsers(usersFile) {
 
 // importUsers('./user_dumps/sample_users.json');
 
+// https://stackoverflow.com/questions/7329978/how-to-list-all-github-users
 // importUsers('./user_dumps/github_users_2015.json'); // 1/1/2015
 // importUsers('./user_dumps/github_users_2016.json');
 // importUsers('./user_dumps/github_users_2017.json');
@@ -62,9 +64,20 @@ async function syncUsers(startDate) {
 		const target = dateFormat(loop, 'yyyy-mm-dd');
 		// Loop through 24 hours
 		for (let i = 0; i <= 24; i++) {
-			// Await axios.get(`http://data.gharchive.org/${target}-${i}.json.gz`);
-			console.log(`http://data.gharchive.org/${target}-${i}.json.gz`);
+			let outputFilename = `${target}-${i}.json.gz`;
+
+			console.log(`Downloading http://data.gharchive.org/${outputFilename}...`);
+			let res = await axios.get(`http://data.gharchive.org/${outputFilename}`);
+			fs.writeFileSync(`./user_dumps/${outputFilename}`, res.data);
+
+			zlib.gunzip(res.data, (error, buff) => {
+				fs.writeFileSync(`./user_dumps/test.json`, buff);
+				console.log('wrote');
+			});
+
+			break; // for testing
 		}
+		break; // for testing
 
 		const newDate = loop.setDate(loop.getDate() + 1);
 		loop = new Date(newDate);
