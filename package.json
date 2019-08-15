@@ -25,6 +25,7 @@
     "iterable-ndjson": "^1.1.0",
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
     "ndjson": "^1.5.0",
     "request": "^2.88.0",
     "unzipper": "^0.10.2",
