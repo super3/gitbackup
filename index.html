@@ -17,6 +17,9 @@
     <!-- development version, includes helpful console warnings -->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
+    <!-- axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+
     <!-- production version, optimized for size and speed -->
     <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
 
@@ -47,22 +50,46 @@
     <p>We backup and archive <a href="https://github.com">Github</a> repositories.</p>
   </div>
 
-  <div class="form-label-group">
-    <input id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="" autocomplete="off" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAkCAYAAADo6zjiAAAAAXNSR0IArs4c6QAAAbNJREFUWAntV8FqwkAQnaymUkpChB7tKSfxWCie/Yb+gbdeCqGf0YsQ+hU95QNyDoWCF/HkqdeiIaEUqyZ1ArvodrOHxanQOiCzO28y781skKwFW3scPV1/febP69XqarNeNTB2KGs07U3Ttt/Ozp3bh/u7V7muheQf6ftLUWyYDB5yz1ijuPAub2QRDDunJsdGkAO55KYYjl0OUu1VXOzQZ64Tr+IiPXedGI79bQHdbheCIAD0dUY6gV6vB67rAvo6IxVgWVbFy71KBKkAFaEc2xPQarXA931ot9tyHphiPwpJgSbfe54Hw+EQHMfZ/msVEEURjMfjCjbFeG2dFxPo9/sVOSYzxmAwGIjnTDFRQLMQAjQ5pJAQkCQJ5HlekeERxHEsiE0xUUCzEO9AmqYQhiF0Oh2Yz+ewWCzEY6aYKKBZCAGYs1wuYTabKdNNMWWxnaA4gp3Yry5JBZRlWTXDvaozUgGTyQSyLAP0dbb3DtQlmcan0yngT2ekE9ARc+z4AvC7nauh9iouhpcGamJeX8XF8MaClwaeROWRA7nk+tUnyzGvZrKg0/40gdME/t8EvgG0/NOS6v9NHQAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;">
-    <label for="inputEmail">Type in a Github username or organization...</label>
-  </div>
+  <div id="app">
+    <div class="form-label-group">
+      <input v-model="search" v-on:keyup="checkUser" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="" autocomplete="off" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAkCAYAAADo6zjiAAAAAXNSR0IArs4c6QAAAbNJREFUWAntV8FqwkAQnaymUkpChB7tKSfxWCie/Yb+gbdeCqGf0YsQ+hU95QNyDoWCF/HkqdeiIaEUqyZ1ArvodrOHxanQOiCzO28y781skKwFW3scPV1/febP69XqarNeNTB2KGs07U3Ttt/Ozp3bh/u7V7muheQf6ftLUWyYDB5yz1ijuPAub2QRDDunJsdGkAO55KYYjl0OUu1VXOzQZ64Tr+IiPXedGI79bQHdbheCIAD0dUY6gV6vB67rAvo6IxVgWVbFy71KBKkAFaEc2xPQarXA931ot9tyHphiPwpJgSbfe54Hw+EQHMfZ/msVEEURjMfjCjbFeG2dFxPo9/sVOSYzxmAwGIjnTDFRQLMQAjQ5pJAQkCQJ5HlekeERxHEsiE0xUUCzEO9AmqYQhiF0Oh2Yz+ewWCzEY6aYKKBZCAGYs1wuYTabKdNNMWWxnaA4gp3Yry5JBZRlWTXDvaozUgGTyQSyLAP0dbb3DtQlmcan0yngT2ekE9ARc+z4AvC7nauh9iouhpcGamJeX8XF8MaClwaeROWRA7nk+tUnyzGvZrKg0/40gdME/t8EvgG0/NOS6v9NHQAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;">
+      <label for="inputEmail">Type in a Github username or organization...</label>
+    </div>
 
-  <ul class="list-group">
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <span><i class="fas fa-user"></i> taylorotwell</span>
-      <button type="button" class="btn btn-sm btn-outline-danger">
-        <i class="fas fa-plus"></i> Add
-      </button>
-    </li>
-  </ul>
+    <ul class="list-group">
+      <li v-if="search" class="list-group-item d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-user"></i> {{search}}</span>
+        <button type="button" class="btn btn-sm btn-success" v-bind:disabled="!isValidUser">
+          <i class="fas fa-plus"></i> Add
+        </button>
+      </li>
+
+      <li v-for="user in users" class="list-group-item d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-user"></i> {{user}}</span>
+        <button type="button" class="btn btn-sm btn-outline-danger">
+          <i class="fas fa-plus"></i> Add
+        </button>
+      </li>
+    </ul>
+  </div>
 
   <p class="mt-5 mb-3 text-muted text-center">© 2019</p>
 </form>
 
-
+  <script>
+  new Vue({
+    el: '#app',
+    data: {
+      search: '',
+      isValidUser: false,
+      users: []
+    },
+    methods: {
+      async checkUser() {
+        const {data} = await axios.get(`/isvaliduser/${this.search}`);
+        this.isValidUser = JSON.parse(data);
+      }
+    }
+  })
+  </script>
 </body></html>
