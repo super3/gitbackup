@@ -76,7 +76,19 @@ async function syncUsers(startDate) {
 			// turn json.gz file into .json file
 			const json = zlib.gunzipSync(data).toString();
 			fs.writeFileSync(`./user_dumps/${outputFilename.slice(0, -3)}`, json);
+
+			// parse json and get usernames
 			console.log(json.slice(0, 50));
+
+			const uniqueUsers = new Set();
+
+			for await (const obj of ndjson.parse(json)) {
+					const user = obj.actor.login;
+					uniqueUsers.add(user);
+					console.log(user);
+			}
+
+			console.log([...uniqueUsers]);
 
 			break; // for testing
 		}
