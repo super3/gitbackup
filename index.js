@@ -1,4 +1,5 @@
 const fs = require('fs');
+const zlib = require('zlib');
 const axios = require('axios');
 const dateFormat = require('dateformat');
 const ndjson = require('iterable-ndjson');
@@ -67,10 +68,15 @@ async function syncUsers(startDate) {
 
 			// this might not be working properly
 			console.log(`Downloading http://data.gharchive.org/${outputFilename}...`);
-			let res = await axios.get(`http://data.gharchive.org/${outputFilename}`);
-			fs.writeFileSync(`./user_dumps/${outputFilename}`, res);
+			let {data} = await axios.get(`http://data.gharchive.org/${outputFilename}`, {
+				responseType: 'arraybuffer'
+			});
+			fs.writeFileSync(`./user_dumps/${outputFilename}`, data);
 
 			// turn json.gz file into .json file
+			const json = zlib.gunzipSync(data).toString();
+			fs.writeFileSync(`./user_dumps/${outputFilename.slice(0, -3)}`, json);
+			console.log(json.slice(0, 50));
 
 			break; // for testing
 		}
