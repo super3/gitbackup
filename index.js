@@ -5,19 +5,25 @@ const dateFormat = require('dateformat');
 const ndjson = require('iterable-ndjson');
 const redis = require('./redis.js');
 
-async function indexSubStrs(user) {
-	let substr = '';
+function toSubstrings(username) {
+	username = username.toLowerCase();
 
-	// Create substrings for given username (not including the username itself)
-	for (let i = 0; i < user.length - 1; i++) {
-		// Convert index to lowercase, but keep results in original case
-		substr += user.toLowerCase().charAt(i);
+	const substrings = [];
 
-		// Count the number of items in the index list
-		const numRes = await redis.scard(`index:${substr}:users`);
+	for(let i = 0; i < username.length; i++) {
+		substrings.push(username.slice(0, i));
+	}
+
+	return substrings;
+}
+
+async function indexUser(user) {
+	const substrings = toSubStrings(user);
+
+	for(const substring of substrings) {
 		// If there are 5 or less items then add substring to index list
-		if (numRes <= 5) {
-			await redis.sadd(`index:${substr}:users`, user);
+		if (await redis.scard(`index:${substring}:users`) <= 5) {
+			await redis.sadd(`index:${substring}:users`, user);
 		}
 	}
 
@@ -44,6 +50,28 @@ async function importUsers(usersFile) {
 	redis.quit();
 }
 
+async function getArchive(target, i) {
+	let outputFilename = `${target}-${i}.json.gz`;
+
+	// this might not be working properly
+	console.log(`Downloading http://data.gharchive.org/${outputFilename}...`);
+
+	let {data} = await axios.get(`http://data.gharchive.org/${outputFilename}`, {
+		responseType: 'arraybuffer'
+	});
+
+	fs.writeFileSync(`./user_dumps/${outputFilename}`, data);
+
+	// turn json.gz file into .json file
+	const json = zlib.gunzipSync(data).toString();
+	fs.writeFileSync(`./user_dumps/${outputFilename.slice(0, -3)}`, json);
+
+	// parse json and get usernames
+	console.log(json.slice(0, 50));
+
+	return ndjson.parse(json);
+}
+
 // importUsers('./user_dumps/sample_users.json');
 
 // https://stackoverflow.com/questions/7329978/how-to-list-all-github-users
@@ -56,42 +84,34 @@ async function importUsers(usersFile) {
 // TODO: Download, process, and index new usernames from gharchive.org
 
 const startDate = new Date('2019-07-25');
+
 async function syncUsers(startDate) {
 	const endDate = new Date(); // Today
 
 	let loop = startDate;
+
 	while (loop <= endDate) {
 		const target = dateFormat(loop, 'yyyy-mm-dd');
 		// Loop through 24 hours
 		for (let i = 0; i <= 24; i++) {
-			let outputFilename = `${target}-${i}.json.gz`;
-
-			// this might not be working properly
-			console.log(`Downloading http://data.gharchive.org/${outputFilename}...`);
-			let {data} = await axios.get(`http://data.gharchive.org/${outputFilename}`, {
-				responseType: 'arraybuffer'
-			});
-			fs.writeFileSync(`./user_dumps/${outputFilename}`, data);
-
-			// turn json.gz file into .json file
-			const json = zlib.gunzipSync(data).toString();
-			fs.writeFileSync(`./user_dumps/${outputFilename.slice(0, -3)}`, json);
-
-			// parse json and get usernames
-			console.log(json.slice(0, 50));
+			const archive = await getArchive(target, i);
 
 			const uniqueUsers = new Set();
 
-			for await (const obj of ndjson.parse(json)) {
-					const user = obj.actor.login;
-					uniqueUsers.add(user);
-					console.log(user);
+			console.log(typeof archive)
+
+			for await (const obj of archive) {
+					const {actor: {login}} = obj;
+					uniqueUsers.add(login);
+
+					console.log([...uniqueUsers]);
 			}
 
 			console.log([...uniqueUsers]);
 
 			break; // for testing
 		}
+
 		break; // for testing
 
 		const newDate = loop.setDate(loop.getDate() + 1);
