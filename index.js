@@ -5,6 +5,14 @@ const dateFormat = require('dateformat');
 const ndjson = require('iterable-ndjson');
 const redis = require('./redis.js');
 
+module.exports = {
+	toSubstrings,
+	indexUser,
+	importUsers,
+	getArchive,
+	syncUsers
+};
+
 function toSubstrings(username) {
 	username = username.toLowerCase();
 
@@ -18,7 +26,7 @@ function toSubstrings(username) {
 }
 
 async function indexUser(user) {
-	const substrings = toSubStrings(user);
+	const substrings = toSubstrings(user);
 
 	for(const substring of substrings) {
 		// If there are 5 or less items then add substring to index list
@@ -121,4 +129,6 @@ async function syncUsers(startDate) {
 	redis.quit();
 }
 
-syncUsers(startDate);
+if(require.main === module) {
+	syncUsers(startDate);
+}

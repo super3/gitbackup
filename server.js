@@ -43,13 +43,13 @@ router.get('/userlist/:page', async ctx => {
 	const allUsers = await redis.smembers('tracked');
 	const total = Number(await redis.scard('tracked'));
 
-	allUsers.sort();
 	const perPage = 3;
 	const totalPages = Math.ceil(total / perPage);
 	const page = Number(ctx.params.page);
 
-	const users = allUsers.slice(page * perPage, (page + 1) * perPage);
+	allUsers.sort();
 
+	const users = allUsers.slice(page * perPage, (page + 1) * perPage);
 
 	ctx.body = JSON.stringify({
 		users,
