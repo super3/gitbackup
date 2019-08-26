@@ -63,7 +63,7 @@
       <label for="inputEmail">Type in a Github username or organization...</label>
 
 	  <ul class="list-group">
-	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = [];">{{user}}</li>
+	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = []; isValidUser = true;">{{user}}</li>
 	  </ul>
     </div>
 
@@ -118,12 +118,8 @@
     },
     methods: {
       async checkUser() {
-        try {
-          await axios.get(`/isvaliduser/${this.search}`);
-          this.isValidUser = true;
-        } catch(error) {
-          this.isValidUser = false;
-        }
+          const {data} = await axios.get(`/isvaliduser/${this.search}`);
+          this.isValidUser = data;
       },
 	  async autocomplete() {
 		  const {data} = await axios.get(`/autocomplete/${this.search}`);
