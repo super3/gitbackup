@@ -8,7 +8,7 @@ const redis = require('./redis.js');
 module.exports = {
 	toSubstrings,
 	indexUser,
-	autocomplete
+	autocomplete,
 	importUsers,
 	getArchive
 };
