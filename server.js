@@ -20,7 +20,7 @@ async function githubUserExists(partialUser) {
 	}
 }
 
-router.get('/users/:partialUser', async ctx => {
+router.get('/autocomplete/:partialUser', async ctx => {
 	ctx.body = await partialUserSearch(ctx.params.partialUser);
 });
 

@@ -38,6 +38,10 @@
           font-size: 3.5rem;
         }
       }
+
+	  .search {
+		  background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAkCAYAAADo6zjiAAAAAXNSR0IArs4c6QAAAbNJREFUWAntV8FqwkAQnaymUkpChB7tKSfxWCie/Yb+gbdeCqGf0YsQ+hU95QNyDoWCF/HkqdeiIaEUqyZ1ArvodrOHxanQOiCzO28y781skKwFW3scPV1/febP69XqarNeNTB2KGs07U3Ttt/Ozp3bh/u7V7muheQf6ftLUWyYDB5yz1ijuPAub2QRDDunJsdGkAO55KYYjl0OUu1VXOzQZ64Tr+IiPXedGI79bQHdbheCIAD0dUY6gV6vB67rAvo6IxVgWVbFy71KBKkAFaEc2xPQarXA931ot9tyHphiPwpJgSbfe54Hw+EQHMfZ/msVEEURjMfjCjbFeG2dFxPo9/sVOSYzxmAwGIjnTDFRQLMQAjQ5pJAQkCQJ5HlekeERxHEsiE0xUUCzEO9AmqYQhiF0Oh2Yz+ewWCzEY6aYKKBZCAGYs1wuYTabKdNNMWWxnaA4gp3Yry5JBZRlWTXDvaozUgGTyQSyLAP0dbb3DtQlmcan0yngT2ekE9ARc+z4AvC7nauh9iouhpcGamJeX8XF8MaClwaeROWRA7nk+tUnyzGvZrKg0/40gdME/t8EvgG0/NOS6v9NHQAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;
+	  }
     </style>
     <!-- Custom styles for this template -->
     <link href="./assets/floating-labels.css" rel="stylesheet">
@@ -54,8 +58,13 @@
     </div>
 
     <div class="form-label-group">
-      <input v-model="search" v-on:keyup="checkUser" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="" autocomplete="off" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAkCAYAAADo6zjiAAAAAXNSR0IArs4c6QAAAbNJREFUWAntV8FqwkAQnaymUkpChB7tKSfxWCie/Yb+gbdeCqGf0YsQ+hU95QNyDoWCF/HkqdeiIaEUqyZ1ArvodrOHxanQOiCzO28y781skKwFW3scPV1/febP69XqarNeNTB2KGs07U3Ttt/Ozp3bh/u7V7muheQf6ftLUWyYDB5yz1ijuPAub2QRDDunJsdGkAO55KYYjl0OUu1VXOzQZ64Tr+IiPXedGI79bQHdbheCIAD0dUY6gV6vB67rAvo6IxVgWVbFy71KBKkAFaEc2xPQarXA931ot9tyHphiPwpJgSbfe54Hw+EQHMfZ/msVEEURjMfjCjbFeG2dFxPo9/sVOSYzxmAwGIjnTDFRQLMQAjQ5pJAQkCQJ5HlekeERxHEsiE0xUUCzEO9AmqYQhiF0Oh2Yz+ewWCzEY6aYKKBZCAGYs1wuYTabKdNNMWWxnaA4gp3Yry5JBZRlWTXDvaozUgGTyQSyLAP0dbb3DtQlmcan0yngT2ekE9ARc+z4AvC7nauh9iouhpcGamJeX8XF8MaClwaeROWRA7nk+tUnyzGvZrKg0/40gdME/t8EvgG0/NOS6v9NHQAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;">
+      <input v-model="search" v-on:keyup="checkUser(); autocomplete();" class="form-control search" required="" autofocus="" autocomplete="off">
+
       <label for="inputEmail">Type in a Github username or organization...</label>
+
+	  <ul class="list-group">
+	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = [];">{{user}}</li>
+	  </ul>
     </div>
 
     <ul class="list-group">
@@ -104,7 +113,8 @@
       users: [],
       page: 0,
       totalPages: 0,
-      totalUser: 0
+      totalUser: 0,
+	  autocompleteResults: []
     },
     methods: {
       async checkUser() {
@@ -115,6 +125,10 @@
           this.isValidUser = false;
         }
       },
+	  async autocomplete() {
+		  const {data} = await axios.get(`/autocomplete/${this.search}`);
+		  this.autocompleteResults = data;
+	  },
       async loadPage(i) {
         const {data: {users, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`);
         this.users = users;
@@ -122,7 +136,7 @@
         this.totalPages = totalPages;
         this.totalUsers = total;
       }
-    }
+  }
   });
 
   app.loadPage(0);

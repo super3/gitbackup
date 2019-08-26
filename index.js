@@ -8,6 +8,7 @@ const redis = require('./redis.js');
 module.exports = {
 	toSubstrings,
 	indexUser,
+	autocomplete
 	importUsers,
 	getArchive
 };
@@ -38,6 +39,12 @@ async function indexUser(user) {
 	// set there should not be any duplicates :)
 	await redis.sadd(`index:${user.toLowerCase()}:users`, user);
 }
+
+/*
+async function autocomplete(search) {
+	return redis.smembers(`index:${search}:users`);
+}
+*/
 
 async function importUsers(usersFile) {
 	let userIndex = 0;
