@@ -9,8 +9,7 @@ module.exports = {
 	toSubstrings,
 	indexUser,
 	importUsers,
-	getArchive,
-	syncUsers
+	getArchive
 };
 
 function toSubstrings(username) {
@@ -80,10 +79,6 @@ async function getArchive(target, i) {
 	return ndjson.parse(json);
 }
 
-async function getUniqueUsers() {
-	
-}
-
 // importUsers('./user_dumps/sample_users.json');
 
 // https://stackoverflow.com/questions/7329978/how-to-list-all-github-users
@@ -95,9 +90,7 @@ async function getUniqueUsers() {
 
 // TODO: Download, process, and index new usernames from gharchive.org
 
-const startDate = new Date('2019-07-25');
-
-async function syncUsers(startDate) {
+async function getUsers(startDate, limit = 100) {
 	const endDate = new Date(); // Today
 
 	let loop = startDate;
@@ -114,22 +107,30 @@ async function syncUsers(startDate) {
 					const {actor: {login}} = obj;
 					uniqueUsers.add(login);
 
+					if(uniqueUsers.size >= limit) {
+						return uniqueUsers;
+					}
+
 			}
-
-			console.log([...uniqueUsers]);
-
-			break; // for testing
 		}
-
-		break; // for testing
 
 		const newDate = loop.setDate(loop.getDate() + 1);
 		loop = new Date(newDate);
 	}
-
-	redis.quit();
 }
 
 if(require.main === module) {
-	syncUsers(startDate);
+	(async () => {
+		const startDate = new Date('2019-07-25');
+
+		const users = await getUsers(startDate);
+
+		for(const user of users) {
+			await indexUser(user);
+		}
+
+		console.log(`Indexed ${users.size} users.`);
+
+		redis.quit();
+	})();
 }
