@@ -9,8 +9,7 @@ module.exports = {
 	toSubstrings,
 	indexUser,
 	autocomplete,
-	importUsers,
-	getArchive
+	getUsers
 };
 
 function toSubstrings(username) {
@@ -46,6 +45,7 @@ async function autocomplete(search) {
 }
 */
 
+/*
 async function importUsers(usersFile) {
 	let userIndex = 0;
 	const source = fs.createReadStream(usersFile);
@@ -63,6 +63,7 @@ async function importUsers(usersFile) {
 
 	redis.quit();
 }
+*/
 
 async function getArchive(target, i) {
 	let outputFilename = `${target}-${i}.json.gz`;

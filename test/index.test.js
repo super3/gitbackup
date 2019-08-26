@@ -29,3 +29,9 @@ test('indexUser', async () => {
 
 	expect(await redis.sismember('index:testusername-5:users', 'testusername')).toBe(0);
 });
+
+test('getUsers', async () => {
+	const users = await scraper.getUsers(new Date('2019-07-25'));
+
+	expect(users instanceof Set).toBe(true);
+});
