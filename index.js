@@ -80,6 +80,10 @@ async function getArchive(target, i) {
 	return ndjson.parse(json);
 }
 
+async function getUniqueUsers() {
+	
+}
+
 // importUsers('./user_dumps/sample_users.json');
 
 // https://stackoverflow.com/questions/7329978/how-to-list-all-github-users
@@ -106,13 +110,10 @@ async function syncUsers(startDate) {
 
 			const uniqueUsers = new Set();
 
-			console.log(typeof archive)
-
 			for await (const obj of archive) {
 					const {actor: {login}} = obj;
 					uniqueUsers.add(login);
 
-					console.log([...uniqueUsers]);
 			}
 
 			console.log([...uniqueUsers]);
