@@ -61,4 +61,4 @@ typings/
 .next
 
 # username files
-user_dumps/
+user_dumps/*.*
