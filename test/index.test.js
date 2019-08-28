@@ -1,6 +1,8 @@
 const scraper = require('../');
 const redis = require('../redis');
 
+jest.setTimeout(30 * 1000);
+
 test('toSubstrings', () => {
 	expect(scraper.toSubstrings('test')).toStrictEqual([ '', 't', 'te', 'tes' ])
 });
