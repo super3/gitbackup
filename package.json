@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --forceExit",
+    "test": "mkdir -p user_dumps; jest --forceExit",
 	"coverage": "jest --forceExit --coverage"
   },
   "repository": {
