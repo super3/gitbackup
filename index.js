@@ -126,6 +126,7 @@ async function getUsers(startDate, limit = 100) {
 	}
 }
 
+/* istanbul ignore next */
 if(require.main === module) {
 	(async () => {
 		const startDate = new Date('2019-07-25');
