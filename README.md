@@ -4,14 +4,20 @@
 
 Backup Github user repositories.
 
-## Scraping
+## Scraping Users
 
 ```
 node index
 ```
 
-## Server
+## Starting Server
 
 ```
 node server
+```
+
+## Syncing Users
+
+```
+curl "http://localhost:8000/actorlogins" | ./github_repos.sh -
 ```

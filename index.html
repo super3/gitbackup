@@ -76,13 +76,13 @@
       </li>
 
       <li v-for="user in users" class="list-group-item d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-user"></i> {{user}}</span>
+        <span><i class="fas fa-user"></i> {{user.username}}</span>
 		<div class="btn-group" role="group" aria-label="Basic example">
           <button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
-            <i class="fas fa-code-branch"></i> 72 repos
+            <i class="fas fa-code-branch"></i> {{user.totalRepos}} repos
           </button>
           <button type="button" class="btn btn-sm btn-outline-success">
-            <i class="fas fa-sync-alt"></i> Synced
+            <i class="fas fa-sync-alt"></i> {{user.status}}
           </button>
         </div>
       </li>

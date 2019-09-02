@@ -8,7 +8,7 @@ function users_from_file() {
 
     jq -r '.actor_login' $1 | while read user; do
         echo "Github API Requests: ${remaining}/${limit}";
-        while [ $remaining -le 47 ];
+        while [ $remaining -le 0 ];
         do
             now=$(date +%s);
             res=$(expr $reset_time - $now);
@@ -32,12 +32,22 @@ function get_user_repos() {
     # total number of pages of repo the user has
     num=$(curl -sI "$url?page=1&per_page=100" | sed -nr 's/^Link:.*page=([0-9]+)&per_page=100>; rel="last".*/\1/p');
 
+	total_repos=0;
+
     # get a list of repos from the API
     echo '' > $1/$1.json # clear the file
     for i in $(seq 1 $num);
     do
-        curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100" | jq -c '.[]' >> $1/$1.json
+        repo=$(curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100");
+		total_repos=$(($total_repos + $(echo $repo | jq length)));
+
+		echo $repo | jq -c '.[]' >> $1/$1.json
     done
+
+	redis-cli set "user:$1:status" "syncing";
+	redis-cli set "user:${user}:total_repos" $total_repos;
+
+	echo "${user}'s total repositories: ${total_repos}";
 }
 
 # download user's repos
@@ -59,6 +69,8 @@ function download_user_repos() {
         fi
 
     done
+
+	redis-cli set "user:$1:status" "synced";
 }
 
 # download repos
