@@ -59,6 +59,14 @@ router.get('/userlist/:page', async ctx => {
 	}, null, '\t');
 });
 
+router.get('/actorlogins', async ctx => {
+	const users = await redis.smembers('tracked');
+
+	users.sort();
+
+	ctx.body = users.map(actor_login => JSON.stringify({actor_login})).join('\n');
+});
+
 router.get('/adduser/:user', async ctx => {
 	if(await githubUserExists(ctx.params.user)) {
 		await redis.sadd('tracked', ctx.params.user);
