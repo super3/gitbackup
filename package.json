@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mkdir -p user_dumps; jest --forceExit",
-	"coverage": "jest --forceExit --coverage"
+    "coverage": "jest --forceExit --coverage"
   },
   "repository": {
     "type": "git",
