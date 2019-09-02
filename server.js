@@ -59,6 +59,12 @@ router.get('/userlist/:page', async ctx => {
 	}, null, '\t');
 });
 
+router.get('/adduser/:user', async ctx => {
+	if(await githubUserExists(ctx.params.user)) {
+		await redis.sadd('tracked', ctx.params.user);
+	}
+});
+
 app
 	.use(router.routes())
 	.use(router.allowedMethods())
