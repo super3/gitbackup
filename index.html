@@ -88,9 +88,19 @@
         <li class="page-item" v-bind:class="{ disabled: page === 0}">
           <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>
         </li>
-        <li v-if="page <= totalPages - 1" class="page-item disabled"><a class="page-link" href="#">{{page}}</a></li>
-        <li v-if="page + 1 <= totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page + 1)" href="#">{{page + 1}}</a></li>
-        <li v-if="page + 2 <= totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page + 2)" href="#">{{page + 2}}</a></li>
+
+        <li v-if="page === 0" class="page-item disabled"><a class="page-link" href="#">0</a></li>
+        <li v-if="page === 0" class="page-item"><a class="page-link" v-on:click="loadPage(1)" href="#">1</a></li>
+        <li v-if="page === 0" class="page-item"><a class="page-link" v-on:click="loadPage(2)" href="#">2</a></li>
+
+		<li v-if="page !== 0 && page !== totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
+		<li v-if="page !== 0 && page !== totalPages - 1" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
+		<li v-if="page !== 0 && page !== totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page + 1)" href="#">{{page + 1}}</a></li>
+
+		<li v-if="page === totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 2)" href="#">{{page - 2}}</a></li>
+		<li v-if="page === totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
+		<li v-if="page === totalPages - 1" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
+
         <li class="page-item" v-bind:class="{ disabled: page + 1 == totalPages}">
           <a v-on:click="loadPage(page + 1)"  class="page-link" href="#">Next</a>
         </li>
