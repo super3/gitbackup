@@ -77,9 +77,14 @@
 
       <li v-for="user in users" class="list-group-item d-flex justify-content-between align-items-center">
         <span><i class="fas fa-user"></i> {{user}}</span>
-        <button type="button" class="btn btn-sm btn-outline-danger">
-          <i class="fas fa-plus"></i> Add
-        </button>
+		<div class="btn-group" role="group" aria-label="Basic example">
+          <button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
+            <i class="fas fa-code-branch"></i> 72 repos
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-success">
+            <i class="fas fa-sync-alt"></i> Synced
+          </button>
+        </div>
       </li>
     </ul>
 
@@ -145,7 +150,10 @@
         this.page = i;
         this.totalPages = totalPages;
         this.totalUsers = total;
-      }
+      },
+	  async loadRepos(user) {
+		  location.replace(`https://github.com/${user}?tab=repositories`);
+	  }
   }
   });
 
