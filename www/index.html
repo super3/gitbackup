@@ -63,7 +63,9 @@
       <label for="inputEmail">Type in a Github username or organization...</label>
 
 	  <ul class="list-group">
-	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = []; isValidUser = true; checkUser()">{{user}}</li>
+	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = []; isValidUser = true; checkUser()">
+			{{user}}
+		</li>
 	  </ul>
     </div>
 
@@ -77,6 +79,7 @@
 
       <li v-for="user in users" class="list-group-item d-flex justify-content-between align-items-center">
         <span><i class="fas fa-user"></i> {{user.username}}</span>
+
 		<div class="btn-group" role="group" aria-label="Basic example">
           <button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
             <i class="fas fa-code-branch"></i> {{user.totalRepos}} repos
@@ -126,6 +129,7 @@
       search: '',
       isValidUser: false,
       users: [],
+	  repos: {},
       page: 0,
       totalPages: 0,
       totalUsers: 0,
@@ -146,13 +150,22 @@
 	  },
       async loadPage(i) {
         const {data: {users, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`);
+
         this.users = users;
         this.page = i;
         this.totalPages = totalPages;
         this.totalUsers = total;
+
+
       },
 	  async loadRepos(user) {
-		  location.replace(`https://github.com/${user}?tab=repositories`);
+		  const {data} = await axios.get(`/user/${user.username}/repos`);
+
+		  const repos = {};
+
+		  repos[user.username] = data;
+
+		  this.repos = repos;
 	  }
   }
   });

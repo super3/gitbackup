@@ -1,3 +1,4 @@
+const fs = require('fs').promises;
 const Koa = require('koa');
 const Router = require('koa-router');
 const axios = require('axios');
@@ -37,6 +38,21 @@ router.get('/adduser/:user', async ctx => {
 	} else {
 		ctx.throw(500, "User/organization doesn't exist!");
 	}
+});
+
+router.get('/user/:user/repos', async ctx => {
+	const path = `${__dirname}/repos/${ctx.params.user}`;
+
+	const files = await fs.readdir(`${__dirname}/repos/${ctx.params.user}`);
+
+	// filter only directories
+	const repos = (await Promise.all(files.map(async file => {
+		const stat = await fs.stat(`${path}/${file}`);
+
+		return stat.isDirectory() ? file : false;
+	}))).filter(file => file !== false);
+
+	ctx.body = repos;
 });
 
 router.get('/userlist/:page', async ctx => {
@@ -80,7 +96,7 @@ router.get('/adduser/:user', async ctx => {
 app
 	.use(router.routes())
 	.use(router.allowedMethods())
-	.use(require('koa-static')(`./`));
+	.use(require('koa-static')(`./www`));
 
 app.listen(PORT, () => {
 	console.log('Server running on port ' + PORT + '...');

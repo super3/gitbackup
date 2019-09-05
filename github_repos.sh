@@ -74,4 +74,7 @@ function download_user_repos() {
 }
 
 # download repos
+mkdir -p repos;
+cd repos;
+
 users_from_file $1
