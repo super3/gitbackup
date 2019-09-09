@@ -59,14 +59,20 @@ function download_user_repos() {
         name="$(jq -r ".full_name" <<< "$repo")"
         url="$(jq -r ".html_url" <<< "$repo")"
 
-        # check if file is already downloaded
-        if [ -d "./${name}" ]; then
-            echo "Repo ${name} exists. Skipping..."
-        # save metadata and video with concat
-        else
-            echo "Cloning ${name}...";
-            git clone $url $name
-        fi
+		# if repo already cloned
+		if [ -d "$name" ]; then
+			echo "Updating ${name}...";
+			# force pull
+			cd $name;
+			git pull -f;
+			cd ../../;
+		else
+			# clone from scratch
+			echo "Cloning ${name}...";
+			git clone $url $name;
+		fi
+
+		zip -r "$name.zip" $name
 
     done
 
