@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const Koa = require('koa');
 const Router = require('koa-router');
 const axios = require('axios');
+const koaSend = require('koa-send');
 const redis = require('./redis.js');
 
 const app = new Koa();
@@ -93,10 +94,15 @@ router.get('/adduser/:user', async ctx => {
 	}
 });
 
+router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
+	root: `${__dirname}/repos`,
+	maxAge: 0
+}));
+
 app
 	.use(router.routes())
-	.use(router.allowedMethods())
-	.use(require('koa-static')(`./www`));
+	//.use(router.allowedMethods())
+	.use(require('koa-static')(`${__dirname}/www`));
 
 app.listen(PORT, () => {
 	console.log('Server running on port ' + PORT + '...');

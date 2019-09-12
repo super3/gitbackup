@@ -61,8 +61,8 @@ function download_user_repos() {
 
 		# if repo already cloned
 		if [ -d "$name" ]; then
-			echo "Updating ${name}...";
 			# force pull
+			echo "Updating ${name}...";
 			cd $name;
 			git pull -f;
 			cd ../../;
