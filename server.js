@@ -5,7 +5,7 @@ const axios = require('axios');
 const koaSend = require('koa-send');
 const redis = require('./redis.js');
 
-const app = new Koa();
+const app = module.exports = new Koa();
 const router = new Router();
 const PORT = 8000;
 
