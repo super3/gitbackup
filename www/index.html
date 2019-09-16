@@ -163,6 +163,7 @@
 	  async addUser() {
 		await axios.get(`/adduser/${this.search}`);
 		await this.loadPage(this.page);
+		this.search = "";
 	  },
 	  async autocomplete() {
 		  const {data} = await axios.get(`/autocomplete/${this.search}`);
