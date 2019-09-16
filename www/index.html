@@ -133,6 +133,8 @@
 </form>
 
   <script>
+  const CancelToken = axios.CancelToken;
+
   const app = new Vue({
     el: '#app',
     data: {
@@ -143,11 +145,19 @@
       page: 0,
       totalPages: 0,
       totalUsers: 0,
-	  autocompleteResults: []
+	  autocompleteResults: [],
+	  cancelPreviousCheckUser: null
     },
     methods: {
       async checkUser() {
-          const {data} = await axios.get(`/isvaliduser/${this.search}`);
+		  if(this.cancelPreviousCheckUser !== null) {
+			  this.cancelPreviousCheckUser();
+		  }
+
+          const {data} = await axios.get(`/isvaliduser/${this.search}`, {
+		      cancelToken: new CancelToken(c => this.cancelPreviousCheckUser = c)
+		  });
+
           this.isValidUser = data;
       },
 	  async addUser() {
