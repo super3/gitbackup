@@ -25,3 +25,9 @@ apt-get install jq zip
 ```
 curl "http://localhost:8000/actorlogins" | ./github_repos.sh -
 ```
+
+## Stats
+```
+## Number of Files 
+find repos/ -type f | wc -l
+
