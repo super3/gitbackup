@@ -55,13 +55,13 @@
     <div class="text-center mb-4">
       <img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
       <h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
-      <p>We backup and archive <a href="https://github.com">Github</a> repositories. Currently tracking {{totalUsers}} users/orgs. </p>
+      <p>We backup and archive <a href="https://github.com">GitHub</a> repositories. Currently tracking {{totalUsers}} users/orgs. </p>
     </div>
 
     <div class="form-label-group">
       <input v-model="search" v-on:keyup="checkUser(); autocomplete();" class="form-control search" required="" autofocus="" autocomplete="off">
 
-      <label for="inputEmail">Type in a Github username or organization...</label>
+      <label for="inputEmail">Type in a GitHub username or organization...</label>
 
 	  <ul class="list-group">
 	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = []; isValidUser = true; checkUser()">
