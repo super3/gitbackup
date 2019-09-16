@@ -60,7 +60,7 @@ router.get('/userlist/:page', async ctx => {
 	const allUsers = await redis.smembers('tracked');
 	const total = Number(await redis.scard('tracked'));
 
-	const perPage = 3;
+	const perPage = 6;
 	const totalPages = Math.ceil(total / perPage);
 	const page = Number(ctx.params.page);
 
