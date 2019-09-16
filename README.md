@@ -19,5 +19,9 @@ node server
 ## Syncing Users
 
 ```
+apt-get install jq zip
+```
+
+```
 curl "http://localhost:8000/actorlogins" | ./github_repos.sh -
 ```
