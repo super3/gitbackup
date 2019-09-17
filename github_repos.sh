@@ -91,8 +91,6 @@ function download_user_repos() {
 			echo "Cloning ${name}...";
 			git clone $url $name;
 
-			cd ../../;
-
 			zip -r "$name.zip" $name
 		fi
 
