@@ -17,8 +17,14 @@ function users_from_file() {
         done
 
         echo "Backing up user: ${user}"
-        get_user_repos $user
-        download_user_repos $user
+        #get_user_repos $user
+        #download_user_repos $user
+
+		storage=$(du "./" -d0 | awk '{print $1;}');
+		redis-cli set "stats:storage" "$storage"
+
+		files=$(find "." "!" -name '.*' -type f | wc -l);
+		redis-cli set "stats:files" "$files"
     done
 }
 
@@ -64,15 +70,31 @@ function download_user_repos() {
 			# force pull
 			echo "Updating ${name}...";
 			cd $name;
-			git pull -f;
-			cd ../../;
+
+			# if changes exist
+			if git checkout master &&
+			    git fetch origin master &&
+			    [ `git rev-list HEAD...origin/master --count` != 0 ] &&
+			    git merge origin/master
+			then
+				# zip new update
+				echo 'Updated';
+			    cd ../../;
+
+				zip -r "$name.zip" $name
+			else
+				echo 'Not updated'
+				cd ../../;
+			fi
 		else
 			# clone from scratch
 			echo "Cloning ${name}...";
 			git clone $url $name;
-		fi
 
-		zip -r "$name.zip" $name
+			cd ../../;
+
+			zip -r "$name.zip" $name
+		fi
 
     done
 
