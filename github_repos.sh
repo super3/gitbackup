@@ -20,7 +20,7 @@ function users_from_file() {
         get_user_repos $user;
         download_user_repos $user;
 
-		storage=$(du -s /etc -B1 | cut -f1);
+		storage=$(du -s repos -B1 | cut -f1);
 		redis-cli set "stats:storage" "$storage";
 
 		files=$(find "." "!" -name '.*' -type f | wc -l);
