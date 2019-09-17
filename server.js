@@ -99,8 +99,8 @@ router.get('/adduser/:user', async ctx => {
 router.get('/stats', async ctx => {
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage'))),
-		files: humanNumber(Number(await redis.get('stats:files'))),
-		repos: humanNumber(Number(await redis.get('stats:repos')))
+		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
+		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1))
 	};
 });
 
