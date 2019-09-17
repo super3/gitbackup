@@ -1,9 +1,13 @@
 #!/bin/bash
 function users_from_file() {
     # TODO: check rate limit
-    limit=$(curl -s "https://api.github.com/rate_limit" | jq -c '.rate.limit');
-    remaining=$(curl -s "https://api.github.com/rate_limit" | jq -c '.rate.remaining');
-    reset_time=$(curl -s "https://api.github.com/rate_limit" | jq -c '.rate.reset');
+
+	echo "https://api.github.com/rate_limit?$API_KEYS";
+	rate_limit=$(curl -s "https://api.github.com/rate_limit?$API_KEYS");
+
+    limit=$(echo "$rate_limit" | jq -c '.rate.limit');
+    remaining=$(echo "$rate_limit" | jq -c '.rate.remaining');
+    reset_time=$(echo "$rate_limit" | jq -c '.rate.reset');
     now=$(date +%s);
 
     jq -r '.actor_login' $1 | while read user; do
@@ -34,7 +38,7 @@ function get_user_repos() {
     mkdir -p $1
 
     # API returns paginated list of user's public repos
-    url="https://api.github.com/users/${1}/repos";
+    url="https://api.github.com/users/${1}/repos?$API_KEYS";
     # total number of pages of repo the user has
     num=$(curl -sI "$url?page=1&per_page=100" | sed -nr 's/^Link:.*page=([0-9]+)&per_page=100>; rel="last".*/\1/p');
 
@@ -44,7 +48,7 @@ function get_user_repos() {
     echo '' > $1/$1.json # clear the file
     for i in $(seq 1 $num);
     do
-        repo=$(curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100");
+        repo=$(curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100&$API_KEYS");
 		total_repos=$(($total_repos + $(echo $repo | jq length)));
 
 		echo $repo | jq -c '.[]' >> $1/$1.json
