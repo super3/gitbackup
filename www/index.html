@@ -127,7 +127,11 @@
       </ul>
     </nav>
 
-      <p class="mt-5 mb-3 text-muted text-center">© 2019</p>
+	  <p class="mt-5 mb-3 text-muted text-center">
+		<span v-if="stats">Storing {{stats.storage}} and {{stats.files}} files<br></span>
+		<span>Built by <a href="https://super3.org">Shawn Wilkinson</a> and <a href="https://montyanderson.net">Monty Anderson</a><br></span>
+		 © 2019
+	  </p>
   </div>
 
 </form>
@@ -146,7 +150,8 @@
       totalPages: 0,
       totalUsers: 0,
 	  autocompleteResults: [],
-	  cancelPreviousCheckUser: null
+	  cancelPreviousCheckUser: null,
+	  stats: null
     },
     methods: {
       async checkUser() {
@@ -187,12 +192,21 @@
 
 		  this.repos = {};
 		  this.repos[user.username] = data;
+	  },
+	  async loadStats() {
+		  const {data} = await axios.get('/stats');
+
+		  this.stats = data;
 	  }
   }
   });
 
   app.loadPage(0);
+  app.loadStats();
 
-  setInterval(() => app.loadPage(app.page), 10 * 1000);
+  setInterval(() => {
+	  app.loadPage(app.page);
+	  app.loadStats();
+  }, 10 * 1000);
   </script>
 </body></html>
