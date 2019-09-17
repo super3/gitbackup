@@ -16,15 +16,15 @@ function users_from_file() {
             sleep 5
         done
 
-        echo "Backing up user: ${user}"
-        get_user_repos $user
-        download_user_repos $user
+        echo "Backing up user: ${user}";
+        get_user_repos $user;
+        download_user_repos $user;
 
-		storage=$(($(du -s /etc | cut -f1) * 512))
-		redis-cli set "stats:storage" "$storage"
+		storage=$(du -s /etc -B1 | cut -f1);
+		redis-cli set "stats:storage" "$storage";
 
 		files=$(find "." "!" -name '.*' -type f | wc -l);
-		redis-cli set "stats:files" "$files"
+		redis-cli set "stats:files" "$files";
     done
 }
 
