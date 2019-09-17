@@ -17,8 +17,8 @@ function users_from_file() {
         done
 
         echo "Backing up user: ${user}"
-        #get_user_repos $user
-        #download_user_repos $user
+        get_user_repos $user
+        download_user_repos $user
 
 		storage=$(du "./" -d0 | awk '{print $1;}');
 		redis-cli set "stats:storage" "$storage"
