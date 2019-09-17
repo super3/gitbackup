@@ -3,6 +3,7 @@ const Koa = require('koa');
 const Router = require('koa-router');
 const axios = require('axios');
 const koaSend = require('koa-send');
+const prettyBytes = require('pretty-bytes');
 const redis = require('./redis.js');
 
 const app = module.exports = new Koa();
@@ -92,6 +93,13 @@ router.get('/adduser/:user', async ctx => {
 	if(await githubUserExists(ctx.params.user)) {
 		await redis.sadd('tracked', ctx.params.user);
 	}
+});
+
+router.get('/stats', async ctx => {
+	ctx.body = {
+		storage: prettyBytes(Number(await redis.get('stats:storage'))),
+		files: Number(await redis.get('stats:files'))
+	};
 });
 
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
