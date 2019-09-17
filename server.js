@@ -101,7 +101,7 @@ router.get('/stats', async ctx => {
 		storage: prettyBytes(Number(await redis.get('stats:storage'))),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
-		users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
+		users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(0))
 	};
 });
 
