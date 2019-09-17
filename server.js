@@ -98,7 +98,8 @@ router.get('/adduser/:user', async ctx => {
 router.get('/stats', async ctx => {
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage'))),
-		files: Number(await redis.get('stats:files'))
+		files: Number(await redis.get('stats:files')),
+		repos: Number(await redis.get('stats:repos'))
 	};
 });
 

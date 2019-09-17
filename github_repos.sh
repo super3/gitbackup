@@ -29,6 +29,9 @@ function users_from_file() {
 
 		files=$(find "." "!" -name '.*' -type f | wc -l);
 		redis-cli set "stats:files" "$files";
+
+		repos=$(find . -mindepth 2 -maxdepth 2 -type d | wc -l);
+		redis-cli set "stats:repos" "$repos"
     done
 }
 
