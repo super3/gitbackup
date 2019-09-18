@@ -59,15 +59,9 @@
     </div>
 
     <div class="form-label-group">
-      <input v-model="search" v-on:keyup="checkUser(); autocomplete();" class="form-control search" required="" autofocus="" autocomplete="off">
+      <input v-model="search" v-on:keyup="loadPage(); checkUser();" class="form-control search" required="" autofocus="" autocomplete="off">
 
       <label for="inputEmail">Type in a GitHub username or organization...</label>
-
-	  <ul class="list-group">
-	    <li v-for="user in autocompleteResults" class="list-group-item" v-on:click="search = user; autocompleteResults = []; isValidUser = true; checkUser()">
-			{{user}}
-		</li>
-	  </ul>
     </div>
 
     <ul class="list-group">
@@ -148,12 +142,15 @@
       page: 0,
       totalPages: 0,
       totalUsers: 0,
-	  autocompleteResults: [],
 	  cancelPreviousCheckUser: null,
 	  stats: null
     },
     methods: {
       async checkUser() {
+		  if(this.search.trim().length < 1) {
+			  return;
+		  }
+
 		  if(this.cancelPreviousCheckUser !== null) {
 			  this.cancelPreviousCheckUser();
 		  }
@@ -168,13 +165,15 @@
 		await axios.get(`/adduser/${this.search}`);
 		await this.loadPage(this.page);
 		this.search = "";
-	  },
-	  async autocomplete() {
-		  const {data} = await axios.get(`/autocomplete/${this.search}`);
-		  this.autocompleteResults = data;
-	  },
+	},
       async loadPage(i) {
-        const {data: {users, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`);
+		i = typeof i !== 'undefined' ? i : this.page;
+
+        const {data: {users, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`, {
+			params: {
+				filter: this.search
+			}
+		});
 
         this.users = users;
         this.page = i;

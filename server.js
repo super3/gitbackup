@@ -68,7 +68,11 @@ router.get('/userlist/:page', async ctx => {
 
 	allUsers.sort();
 
-	const users = await Promise.all(allUsers.slice(page * perPage, (page + 1) * perPage).map(async username => ({
+	const {filter} = ctx.query;
+
+	const filteredUsers = typeof filter === 'string' ? allUsers.filter(user => user.includes(filter)) : allUsers;
+
+	const users = await Promise.all(filteredUsers.slice(page * perPage, (page + 1) * perPage).map(async username => ({
 		username,
 		totalRepos: Number(await redis.get(`user:${username}:total_repos`)),
 		status: await redis.get(`user:${username}:status`) || 'unsynced'
