@@ -102,6 +102,9 @@ function download_user_repos() {
 			zip -r "$name.zip" $name
 		fi
 
+		echo "[debug] url: '$url'";
+		echo "[debug] name: '$name'";
+
     done
 
 	redis-cli set "user:$1:status" "synced";
