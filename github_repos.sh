@@ -42,9 +42,9 @@ function get_user_repos() {
     mkdir -p $1
 
     # API returns paginated list of user's public repos
-    url="https://api.github.com/users/${1}/repos?$API_KEYS";
+    url="https://api.github.com/users/${1}/repos";
     # total number of pages of repo the user has
-    num=$(curl -sI "$url?page=1&per_page=100" | sed -nr 's/^Link:.*page=([0-9]+)&per_page=100>; rel="last".*/\1/p');
+    num=$(curl -sI "$url?page=1&per_page=100&$API_KEYS" | sed -nr 's/^Link:.*page=([0-9]+)&per_page=100>; rel="last".*/\1/p');
 
 	total_repos=0;
 
