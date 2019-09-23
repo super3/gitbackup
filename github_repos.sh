@@ -110,6 +110,9 @@ function download_user_repos() {
 	redis-cli set "user:$1:status" "synced";
 }
 
+# disable username/password prompt for repos with DMCA takedown etc
+export GIT_TERMINAL_PROMPT=0;
+
 # download repos
 mkdir -p repos;
 cd repos;
