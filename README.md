@@ -23,7 +23,7 @@ apt-get install jq zip
 ```
 
 ```
-sync_users.sh
+./sync_users.sh
 ```
 
 ## Stats
