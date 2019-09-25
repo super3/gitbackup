@@ -20,6 +20,11 @@ apt-get install jq zip
 ./sync_users.sh
 ```
 
+## Syncing Stats
+```
+./update_stats.sh
+```
+
 ## Add Users Manually
 
 ```
