@@ -41,22 +41,24 @@ function get_user_repos() {
     # make user's directory
     mkdir -p $1
 
-    # API returns paginated list of user's public repos
-    url="https://api.github.com/users/${1}/repos";
-    # total number of pages of repo the user has
-    num=$(curl -sI "$url?page=1&per_page=100&$API_KEYS" | sed -nr "s/^Link:.*page=([0-9]+)&per_page=100&$API_KEYS>; rel='last'.*/\1/p");
-
 	total_repos=0;
 
     # get a list of repos from the API
     echo '' > $1/$1.json # clear the file
-    for i in $(seq 1 $num);
-    do
-        repo=$(curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100&$API_KEYS");
+
+	i=1;
+
+	while : ; do
+		repo=$(curl -X GET "https://api.github.com/users/${1}/repos?page=${i}&per_page=100&$API_KEYS");
 		total_repos=$(($total_repos + $(echo $repo | jq length)));
 
 		echo $repo | jq -c '.[]' >> $1/$1.json
-    done
+
+		# assume last page if amount of repos is less than 100
+	    [[ $(echo $repo | jq length) == 100 ]] || break
+
+		i=$((i + 1));
+	done
 
 	redis-cli set "user:$1:status" "syncing";
 	redis-cli set "user:${user}:total_repos" $total_repos;
@@ -77,7 +79,7 @@ function download_user_repos() {
 		if [ -d "$name" ]; then
 			# force pull
 			echo "Updating ${name}...";
-			cd $name;
+			cd "$name";
 
 			# if changes exist
 			if git checkout master &&
@@ -89,7 +91,7 @@ function download_user_repos() {
 				echo 'Updated';
 			    cd ../../;
 
-				zip -r "$name.zip" $name
+				zip -r "$name.zip" "$name"
 			else
 				echo 'Not updated'
 				cd ../../;
@@ -97,9 +99,9 @@ function download_user_repos() {
 		else
 			# clone from scratch
 			echo "Cloning ${name}...";
-			git clone $url $name;
+			git clone "$url" "$name";
 
-			zip -r "$name.zip" $name
+			zip -r "$name.zip" "$name"
 		fi
 
 		echo "[debug] url: '$url'";
