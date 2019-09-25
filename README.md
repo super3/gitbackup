@@ -4,12 +4,6 @@
 
 Backup Github user repositories.
 
-## Scraping Users
-
-```
-node index
-```
-
 ## Starting Server
 
 ```
@@ -26,7 +20,8 @@ apt-get install jq zip
 ./sync_users.sh
 ```
 
-## Stats
+## Add Users Manually
+
 ```
-## Number of Files 
-find repos/ -type f | wc -l
+node track-users.js [github_users_dump.json] [# of users to add]
+```
