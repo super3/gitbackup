@@ -26,6 +26,12 @@ test('/isvaliduser', async () => {
 	expect(response.data).toBe(true);
 });
 
+test('/isvaliduser', async () => {
+	const response = await client.get('/isvaliduser/not_valid_user__');
+
+	expect(response.data).toBe(false);
+});
+
 test('/adduser', async () => {
 	const response = await client.get('/adduser/super3');
 

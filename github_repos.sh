@@ -72,10 +72,7 @@ function download_user_repos() {
 			cd "$name";
 
 			# if changes exist
-			if git checkout master &&
-			    git fetch origin master &&
-			    [ `git rev-list HEAD...origin/master --count` != 0 ] &&
-			    git merge origin/master
+			if git remote update
 			then
 				# zip new update
 				echo 'Updated';
@@ -89,7 +86,7 @@ function download_user_repos() {
 		else
 			# clone from scratch
 			echo "Cloning ${name}...";
-			git clone "$url" "$name";
+			git clone --mirror "$url" "$name";
 
 			zip -r "$name.zip" "$name"
 		fi
