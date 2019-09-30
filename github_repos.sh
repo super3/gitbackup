@@ -91,8 +91,36 @@ function download_user_repos() {
 			zip -r "$name.zip" "$name"
 		fi
 
-		echo "[debug] url: '$url'";
-		echo "[debug] name: '$name'";
+		# if repo wiki already cloned
+		if [ -d "$name.wiki" ]; then
+			# force pull
+			echo "Updating $name.wiki...";
+			cd "$name.wiki";
+
+			# if changes exist
+			if git remote update
+			then
+				# zip new update
+				echo 'Updated';
+				cd ../../;
+
+				zip -r "$name.wiki.zip" "$name.wiki"
+			else
+				echo 'Not updated'
+				cd ../../;
+			fi
+		else
+			# clone from scratch
+			echo "Cloning $name.wiki...";
+
+			if git clone --mirror "$url.wiki.git" "$name.wiki"
+			then
+				zip -r "$name.wiki.zip" "$name.wiki";
+			fi
+		fi
+
+		echo "[debug] url: '$url.wiki'";
+		echo "[debug] name: '$name.wiki'";
 
     done
 
