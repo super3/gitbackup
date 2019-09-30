@@ -11,9 +11,11 @@ const app = module.exports = new Koa();
 const router = new Router();
 const PORT = 8000;
 
+/*
 async function partialUserSearch(input) {
 	return redis.smembers(`index:${input}:users`);
 }
+*/
 
 async function githubUserExists(partialUser) {
 	try {
@@ -24,9 +26,11 @@ async function githubUserExists(partialUser) {
 	}
 }
 
+/*
 router.get('/autocomplete/:partialUser', async ctx => {
 	ctx.body = await partialUserSearch(ctx.params.partialUser);
 });
+*/
 
 router.get('/isvaliduser/:partialUser', async ctx => {
 	ctx.body = await githubUserExists(ctx.params.partialUser);

@@ -131,11 +131,12 @@
 
   <script>
   const CancelToken = axios.CancelToken;
+  const urlParams = new URLSearchParams(location.search);
 
   const app = new Vue({
     el: '#app',
     data: {
-      search: '',
+      search: urlParams.get('q') || '',
       isValidUser: false,
       users: [],
 	  repos: {},

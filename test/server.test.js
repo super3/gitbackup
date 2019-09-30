@@ -41,5 +41,17 @@ test('/adduser', async () => {
 test('/userlist', async () => {
 	const response = await client.get('/userlist/0');
 
-	console.log(response.data);
+	expect(response.status).toBe(200);
+});
+
+test('/actorlogins', async () => {
+	const response = await client.get('/actorlogins');
+
+	expect(response.status).toBe(200);
+});
+
+test('/stats', async () => {
+	const response = await client.get('/actorlogins');
+
+	expect(response.status).toBe(200);
 });
