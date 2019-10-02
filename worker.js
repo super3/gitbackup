@@ -58,11 +58,21 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 				console.log(repo.full_name, 'already exists, fetching');
 
 				const gitRepo = await git.Repository.open(`${repoPath}/.git`);
-				await gitRepo.fetchAll();
+
+				try {
+					await gitRepo.fetchAll();
+				} catch(err) {
+					console.log('fetch failed');
+				}
 			} else {
 				// clone from fresh
 				console.log(repo.full_name, 'cloning from fresh');
-				await git.Clone(repo.git_url, repoPath);
+
+				try {
+					await git.Clone(repo.git_url, repoPath);
+				} catch(err) {
+					console.log('clone failed');
+				}
 			}
 
 			const repoZip = `${repoPath}.zip`;
