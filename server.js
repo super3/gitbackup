@@ -11,12 +11,6 @@ const app = module.exports = new Koa();
 const router = new Router();
 const PORT = 8000;
 
-/*
-async function partialUserSearch(input) {
-	return redis.smembers(`index:${input}:users`);
-}
-*/
-
 async function githubUserExists(partialUser) {
 	try {
 		await axios.get(`https://github.com/${partialUser}`);
@@ -26,12 +20,6 @@ async function githubUserExists(partialUser) {
 	}
 }
 
-/*
-router.get('/autocomplete/:partialUser', async ctx => {
-	ctx.body = await partialUserSearch(ctx.params.partialUser);
-});
-*/
-
 router.get('/isvaliduser/:partialUser', async ctx => {
 	ctx.body = await githubUserExists(ctx.params.partialUser);
 });
@@ -40,7 +28,7 @@ router.get('/adduser/:user', async ctx => {
 	const userExists = await githubUserExists(ctx.params.user);
 
 	if (userExists) {
-		 const added = await redis.sadd('tracked', ctx.params.user) === 1;
+		 const added = await redis.zadd('tracked', 0, ctx.params.user) === 1;
 		 ctx.body = added ? 'added' : 'exists';
 	} else {
 		ctx.throw(500, "User/organization doesn't exist!");
@@ -63,8 +51,8 @@ router.get('/user/:user/repos', async ctx => {
 });
 
 router.get('/userlist/:page', async ctx => {
-	const allUsers = await redis.smembers('tracked');
-	const total = Number(await redis.scard('tracked'));
+	const allUsers = await redis.zrange('tracked', 0, -1);
+	const total = Number(await redis.zcard('tracked'));
 
 	const perPage = 6;
 	const totalPages = Math.ceil(total / perPage);
@@ -91,7 +79,7 @@ router.get('/userlist/:page', async ctx => {
 });
 
 router.get('/actorlogins', async ctx => {
-	const users = await redis.smembers('tracked');
+	const users = await await redis.zrange('tracked', 0, -1);
 
 	users.sort();
 
@@ -100,7 +88,7 @@ router.get('/actorlogins', async ctx => {
 
 router.get('/adduser/:user', async ctx => {
 	if(await githubUserExists(ctx.params.user)) {
-		await redis.sadd('tracked', ctx.params.user);
+		await redis.zadd('tracked', 0, ctx.params.user);
 	}
 });
 
