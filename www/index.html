@@ -81,11 +81,11 @@
 					<i class="fas fa-code-branch"></i> View {{user.totalRepos}} Repos
 				</button>
 				<button type="button" class="btn btn-sm btn-outline-success" v-bind:class="{
-					'btn-outline-success': user.status === 'Synced',
-					'btn-outline-warning': user.status === 'Syncing',
-					'btn-outline-danger': user.status === 'Unsynced',
+					'btn-outline-success': user.status === 'synced',
+					'btn-outline-warning': user.status === 'syncing',
+					'btn-outline-danger': user.status === 'unsynced',
 				}">
-					<i class="fas fa-sync-alt"></i> {{user.status}}
+					<i class="fas fa-sync-alt"></i> {{user.status | capitalize}}
 				</button>
 			</div>
 		</div>
@@ -197,7 +197,14 @@
 
 		  this.stats = data;
 	  }
-  }
+  },
+  filters: {
+	capitalize: function (value) {
+		if (!value) return ''
+		value = value.toString()
+		return value.charAt(0).toUpperCase() + value.slice(1)
+		}
+	}
   });
 
   app.loadPage(0);
