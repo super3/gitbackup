@@ -65,7 +65,16 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 				await git.Clone(repo.git_url, repoPath);
 			}
 
-			await execa('zip', [ '-r', `../${repo.name}.zip`, './' ], {
+			const repoZip = `${repoPath}.zip`;
+
+			try {
+				await fs.stat(repoZip);
+				await fs.unlink(repoZip)
+			} catch(err) {
+
+			}
+
+			await execa('zip', [ '-r', repoZip, './' ], {
 				cwd: repoPath
 			});
 		}
