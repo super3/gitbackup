@@ -71,7 +71,7 @@ router.get('/userlist/:page', async ctx => {
 			// if locked
 				await redis.exists(`lock:${username}`)
 			? 'syncing'
-			: Number(await redis.zscore('tracked', username) <= 0 ? 'unsynced' : 'synced')
+			: (Number(await redis.zscore('tracked', username)) <= 0 ? 'unsynced' : 'synced')
 	})));
 
 	ctx.body = JSON.stringify({
