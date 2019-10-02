@@ -15,7 +15,7 @@ const limit = Number(process.argv[3]) || Infinity;
 			break;
 		}
 
-		await redis.sadd('tracked', obj.actor_login);
+		await redis.zadd('tracked', 0, obj.actor_login);
 	}
 
 	process.exit(0);
