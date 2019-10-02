@@ -78,12 +78,12 @@
 
 			<div class="btn-group" role="group" aria-label="Basic example">
 				<button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
-					<i class="fas fa-code-branch"></i> View {{user.totalRepos}} repos
+					<i class="fas fa-code-branch"></i> View {{user.totalRepos}} Repos
 				</button>
 				<button type="button" class="btn btn-sm btn-outline-success" v-bind:class="{
-					'btn-outline-success': user.status === 'synced',
-					'btn-outline-warning': user.status === 'syncing',
-					'btn-outline-danger': user.status === 'unsynced',
+					'btn-outline-success': user.status === 'Synced',
+					'btn-outline-warning': user.status === 'Syncing',
+					'btn-outline-danger': user.status === 'Unsynced',
 				}">
 					<i class="fas fa-sync-alt"></i> {{user.status}}
 				</button>
