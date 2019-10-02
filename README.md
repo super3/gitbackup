@@ -20,6 +20,10 @@ apt-get install jq zip
 ./sync_users.sh
 ```
 
+## Reset sync
+
+$ redis-cli zunionstore tracked 1 tracked WEIGHTS 1
+
 ## Syncing Stats
 ```
 ./update_stats.sh
