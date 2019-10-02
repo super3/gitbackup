@@ -67,7 +67,11 @@ router.get('/userlist/:page', async ctx => {
 	const users = await Promise.all(filteredUsers.slice(page * perPage, (page + 1) * perPage).map(async username => ({
 		username,
 		totalRepos: Number(await redis.get(`user:${username}:total_repos`)),
-		status: await redis.get(`user:${username}:status`) || 'unsynced'
+		status:
+			// if locked
+				await redis.exists(`lock:${username}`)
+			? 'syncing'
+			: (await redis.zscore('tracked', username) === '0' ? 'unsynced' : 'synced')
 	})));
 
 	ctx.body = JSON.stringify({
@@ -124,6 +128,13 @@ router.post('/lock', async ctx => {
 
 router.post('/lock/:username', async ctx => {
 	await redis.expire(`lock:${ctx.params.username}`, 10);
+
+	ctx.body = JSON.stringify(true);
+});
+
+router.post('/lock/:username/complete', async ctx => {
+	await redis.del(`lock:${ctx.params.username}`);
+	await redis.zadd('tracked', 'XX', Date.now(), ctx.params.username);
 
 	ctx.body = JSON.stringify(true);
 });
