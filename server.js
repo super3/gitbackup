@@ -101,10 +101,38 @@ router.get('/stats', async ctx => {
 	};
 });
 
+router.post('/lock', async ctx => {
+	let username;
+
+	for(let i = 0; ; i++) {
+		const [ _username ] = await redis.zrangebyscore('tracked', '-inf', '+inf', 'LIMIT', i, 1);
+
+		if(typeof _username !== 'string') {
+			throw new Error('All users synced!');
+		}
+
+		const locked = await redis.set(`lock:${_username}`, '1', 'EX', 10, 'NX') === 'OK';
+
+		if(locked === true) {
+			username = _username;
+			break;
+		}
+	}
+
+	ctx.body = JSON.stringify(username);
+});
+
+router.post('/lock/:username', async ctx => {
+	await redis.expire(`lock:${ctx.params.username}`, 10);
+
+	ctx.body = JSON.stringify(true);
+});
+
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
 	root: `${__dirname}/repos`,
 	maxAge: 0
 }));
+
 
 app
 	.use(router.routes())
