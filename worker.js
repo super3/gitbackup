@@ -94,6 +94,8 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 			try {
 				await fs.stat(repoPath);
 				cloned = true;
+			} catch(err) {
+				
 			}
 
 			if(cloned === true) {
