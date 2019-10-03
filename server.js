@@ -126,15 +126,27 @@ router.post('/lock', async ctx => {
 	ctx.body = JSON.stringify(username);
 });
 
-router.post('/lock/:username', async ctx => {
-	await redis.expire(`lock:${ctx.params.username}`, 10);
+router.post('/lock/update', async ctx => {
+	const {username} = ctx.query;
+
+	if(typeof username !== 'string') {
+		throw new TypeError('Username must be a string');
+	}
+
+	await redis.expire(`lock:${username}`, 10);
 
 	ctx.body = JSON.stringify(true);
 });
 
-router.post('/lock/:username/complete', async ctx => {
-	await redis.del(`lock:${ctx.params.username}`);
-	await redis.zadd('tracked', 'XX', Date.now(), ctx.params.username);
+router.post('/lock/complete', async ctx => {
+	const {username} = ctx.query;
+
+	if(typeof username !== 'string') {
+		throw new TypeError('Username must be a string');
+	}
+
+	await redis.zadd('tracked', 'XX', Date.now(), username);
+	await redis.del(`lock:${username}`);
 
 	ctx.body = JSON.stringify(true);
 });

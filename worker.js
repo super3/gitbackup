@@ -16,7 +16,11 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 		const username = (await axios.post('http://localhost:8000/lock')).data;
 
 		const updateLock = setInterval(async () => {
-			await axios.post(`http://localhost:8000/lock/${username}`)
+			await axios.post(`http://localhost:8000/lock/update`, null, {
+				params: {
+					username
+				}
+			});
 		}, 5000);
 
 		const repos = [];
@@ -92,6 +96,11 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 		await redis.set(`user:${username}:total_repos`, repos.length);
 
 		clearTimeout(updateLock);
-		await axios.post(`http://localhost:8000/lock/${username}/complete`);
+
+		await axios.post(`http://localhost:8000/lock/complete`, null, {
+			params: {
+				username
+			}
+		});
 	}
 })();
