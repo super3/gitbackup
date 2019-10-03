@@ -151,6 +151,19 @@ router.post('/lock/complete', async ctx => {
 	ctx.body = JSON.stringify(true);
 });
 
+router.post('/lock/complete', async ctx => {
+	const {username} = ctx.query;
+
+	if(typeof username !== 'string') {
+		throw new TypeError('Username must be a string');
+	}
+
+	await redis.zadd('tracked', 'XX', Date.now(), username);
+	await redis.del(`lock:${username}`);
+
+	ctx.body = JSON.stringify(true);
+});
+
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
 	root: `${__dirname}/repos`,
 	maxAge: 0

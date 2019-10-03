@@ -88,9 +88,19 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 
 			}
 
-			await execa('zip', [ '-r', repoZip, './' ], {
-				cwd: repoPath
-			});
+			// only create zip if repo cloned (not empty)
+			let cloned = false;
+
+			try {
+				await fs.stat(repoPath);
+				cloned = true;
+			}
+
+			if(cloned === true) {
+				await execa('zip', [ '-r', repoZip, './' ], {
+					cwd: repoPath
+				});
+			}
 		}
 
 		await redis.set(`user:${username}:total_repos`, repos.length);
