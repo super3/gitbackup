@@ -1,16 +1,12 @@
 {
 	apps: [{
-		name: "gitbackup",
+		name: "server",
 		script: "server.js",
-		max_memory_restart: "512M",
-		watch: false,
-		env: {
-			NODE_ENV: "production",
-			DEBUG: "gitbackup:*"
-		},
-		env_production: {
-			NODE_ENV: "production",
-			DEBUG: "gitbackup:*"
-		}
+		max_memory_restart: "512M"
+	},{
+		name: "worker",
+		script: "worker.js",
+		max_memory_restart: "1G",
+		"instances": 1
 	}]
 }
