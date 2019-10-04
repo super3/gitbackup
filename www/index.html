@@ -80,7 +80,7 @@
 				<button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
 					<i class="fas fa-code-branch"></i> View {{user.totalRepos}} Repos
 				</button>
-				<button type="button" class="btn btn-sm btn-outline-success" v-bind:class="{
+				<button type="button" class="btn btn-sm" v-bind:class="{
 					'btn-outline-success': user.status === 'synced',
 					'btn-outline-warning': user.status === 'syncing',
 					'btn-outline-danger': user.status === 'unsynced',

@@ -69,9 +69,15 @@ router.get('/userlist/:page', async ctx => {
 		totalRepos: Number(await redis.get(`user:${username}:total_repos`)),
 		status:
 			// if locked
-				await redis.exists(`lock:${username}`)
-			? 'syncing'
-			: (Number(await redis.zscore('tracked', username)) <= 0 ? 'unsynced' : 'synced')
+			await redis.exists(`lock:${username}`)
+				? 'syncing'
+				: (Number(await redis.zscore('tracked', username)) <= 0
+					? 'unsynced'
+					: ((await redis.exists(`user:${username}:error`))
+						? 'error'
+						: 'synced'
+					)
+				)
 	})));
 
 	ctx.body = JSON.stringify({
@@ -133,10 +139,21 @@ router.post('/lock/:username', async ctx => {
 });
 
 router.post('/lock/:username/complete', async ctx => {
-	await redis.del(`lock:${ctx.params.username}`);
-	await redis.zadd('tracked', 'XX', Date.now(), ctx.params.username);
+	await redis.multi()
+		.del(`lock:${ctx.params.username}`)
+		.zadd('tracked', 'XX', Date.now(), ctx.params.username)
+		.del(`user:${ctx.params.username}:error`)
+		.exec();
 
 	ctx.body = JSON.stringify(true);
+});
+
+router.post('/lock/:username/error', async ctx => {
+	await redis.multi()
+		.del(`lock:${ctx.params.username}`)
+		.zadd('tracked', 'XX', Date.now(), ctx.params.username)
+		.set(`user:${ctx.params.username}:error`, 'true')
+		.exec();
 });
 
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
