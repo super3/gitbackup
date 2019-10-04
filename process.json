@@ -1,0 +1,16 @@
+{
+	apps: [{
+		name: "gitbackup",
+		script: "server.js",
+		max_memory_restart: "512M",
+		watch: false,
+		env: {
+			NODE_ENV: "production",
+			DEBUG: "gitbackup:*"
+		},
+		env_production: {
+			NODE_ENV: "production",
+			DEBUG: "gitbackup:*"
+		}
+	}]
+}
