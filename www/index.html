@@ -84,6 +84,7 @@
 					'btn-outline-success': user.status === 'synced',
 					'btn-outline-warning': user.status === 'syncing',
 					'btn-outline-danger': user.status === 'unsynced',
+					'btn-outline-dark': user.status === 'error'
 				}">
 					<i class="fas fa-sync-alt"></i> {{user.status | capitalize}}
 				</button>
