@@ -166,7 +166,6 @@
 	  async addUser() {
 		await axios.get(`/adduser/${this.search}`);
 		await this.loadPage(this.page);
-		this.search = "";
 	},
       async loadPage(i) {
 		i = typeof i !== 'undefined' ? i : this.page;
