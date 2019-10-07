@@ -149,6 +149,14 @@ router.post('/lock/:username/complete', async ctx => {
 		.del(`user:${ctx.params.username}:error`)
 		.exec();
 
+	const {totalRepos} = ctx.query;
+	const oldTotal = await redis.getset(`user:${ctx.params.username}`, totalRepos) || 0;
+
+	await redis.multi()
+		.decrby('stats:repos', Number(oldTotal))
+		.incrby('stats:repos', Number(totalRepos))
+		.exec();
+
 	ctx.body = JSON.stringify(true);
 });
 

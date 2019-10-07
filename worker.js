@@ -2,7 +2,6 @@ const fs = require('fs').promises;
 const axios = require('axios');
 const git = require('nodegit');
 const execa = require('execa');
-const redis = require('./redis');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -124,8 +123,11 @@ async function cloneUser(username) {
 
 			clearInterval(updateLock);
 
-			await redis.set(`user:${username}:total_repos`, totalRepos);
-			await axios.post(`http://localhost:8000/lock/${username}/complete`);
+			await axios.post(`http://localhost:8000/lock/${username}/complete`, null, {
+				params: {
+					totalRepos
+				}
+			});
 		} catch(error) {
 			console.log(error);
 
