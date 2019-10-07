@@ -94,7 +94,9 @@ async function cloneUser(username) {
 		}
 	}
 
-	await redis.set(`user:${username}:total_repos`, repos.length);
+	return {
+		totalRepos: repos.length
+	};
 }
 
 (async () => {
@@ -106,9 +108,13 @@ async function cloneUser(username) {
 				await axios.post(`http://localhost:8000/lock/${username}`)
 			}, 5000);
 
-			await cloneUser(username);
+			const {
+				totalRepos
+			} = await cloneUser(username);
 
-			clearTimeout(updateLock);
+			clearInterval(updateLock);
+
+			await redis.set(`user:${username}:total_repos`, totalRepos);
 			await axios.post(`http://localhost:8000/lock/${username}/complete`);
 		} catch(error) {
 			console.log(error);
