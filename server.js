@@ -155,6 +155,8 @@ router.post('/lock/:username/error', async ctx => {
 		.zadd('tracked', 'XX', Date.now(), ctx.params.username)
 		.set(`user:${ctx.params.username}:error`, 'true')
 		.exec();
+
+	ctx.body = JSON.stringify(true);
 });
 
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {

@@ -94,6 +94,14 @@ async function cloneUser(username) {
 		}
 	}
 
+	const userPath = `${__dirname}/repos/${username}`;
+
+	const totalSize = Number((await execa('du', [ '-sb', './' ], {
+		cwd: userPath
+	})).stdout.split('\t')[0]);
+
+	console.log({totalSize});
+
 	return {
 		totalRepos: repos.length
 	};
