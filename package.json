@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ovsoinc/gitbackup#readme",
   "dependencies": {
+    "@sindresorhus/df": "^3.1.1",
     "async-zip": "^1.0.2",
     "axios": "^0.19.0",
     "dateformat": "^3.0.3",

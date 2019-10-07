@@ -5,6 +5,7 @@ const axios = require('axios');
 const koaSend = require('koa-send');
 const prettyBytes = require('pretty-bytes');
 const humanNumber = require('human-number');
+const df = require('@sindresorhus/df');
 const redis = require('./redis.js');
 
 const app = module.exports = new Koa();
@@ -103,8 +104,10 @@ router.get('/adduser/:user', async ctx => {
 });
 
 router.get('/stats', async ctx => {
+	const {used} = await df.file(__dirname);
+
 	ctx.body = {
-		storage: prettyBytes(Number(await redis.get('stats:storage'))),
+		storage: prettyBytes(used),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
