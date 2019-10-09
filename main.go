@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/eapache/channels"
-	"github.com/go-redis/redis"
 	"github.com/go-resty/resty/v2"
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/mholt/archiver"
@@ -36,12 +36,6 @@ var (
 	SupervisorURL = "http://localhost:8000"
 
 	Client = resty.New().SetRetryCount(3)
-
-	Redis = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
 
 	mUser       = metrics.NewMeter()
 	mRepo       = metrics.NewMeter()
@@ -258,15 +252,12 @@ func (t *Task) relock() error {
 	return nil
 }
 
-func (t *Task) report() error {
-	return Redis.Set("user:"+string(t.username)+":total_repos", len(t.repos), 0).Err()
-}
-
 func (t *Task) complete() error {
 	url := SupervisorURL + "/lock/" + string(t.username) + "/complete"
 
 	res, err := Client.R().
 		SetContext(t.t.Context(nil)).
+		SetQueryParam("totalRepos", strconv.Itoa(len(t.repos))).
 		Post(url)
 	if err != nil {
 		fmt.Println("Failed to complete:", t.username, err, res.Status())
@@ -289,11 +280,6 @@ func (t *Task) mirror() (err error) {
 	fmt.Println("Starting:", t.username, len(t.repos))
 
 	err = t.repos.Mirror(t.t.Context(nil), ConcurrentRepos)
-	if err != nil {
-		return err
-	}
-
-	err = t.report()
 	if err != nil {
 		return err
 	}
