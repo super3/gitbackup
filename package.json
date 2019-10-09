@@ -22,7 +22,7 @@
     "async-zip": "^1.0.2",
     "axios": "^0.19.0",
     "dateformat": "^3.0.3",
-    "execa": "^2.0.5",
+    "execa": "^2.1.0",
     "gunzip-file": "^0.1.1",
     "human-number": "^1.0.4",
     "ioredis": "^4.14.1",
