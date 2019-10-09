@@ -83,11 +83,13 @@ func (repo *Repository) Archive(ctx context.Context) (err error) {
 		return err
 	}
 
-	// Upload to storj... and then remove.
-	err = os.RemoveAll(path)
-	if err != nil {
-		return err
-	}
+	// FIXME: Upload to storj... and then remove.
+	/*
+		err = os.RemoveAll(path)
+		if err != nil {
+			return err
+		}
+	*/
 
 	return err
 }
