@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strconv"
@@ -22,6 +23,7 @@ import (
 	gitPPP "gopkg.in/src-d/go-git.v4/plumbing/protocol/packp"
 	gitPT "gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/tomb.v2"
+	"storj.io/storj/lib/uplink"
 )
 
 // FIXME: Turn this into a proper cobra CLI.
@@ -30,24 +32,74 @@ var (
 	ClientSecret = os.Getenv("CLIENT_SECRET")
 
 	ConcurrentUsers = 1
-	ConcurrentRepos = 3
+	ConcurrentRepos = 1
 
 	GithubURL     = "https://api.github.com"
 	SupervisorURL = "http://localhost:8000"
 
-	Client = resty.New().SetRetryCount(3)
+	Client = resty.New().SetRetryCount(3).AddRetryCondition(Retry429)
+
+	sjSatellite            = os.Getenv("UPLINK_SATELLITE")
+	sjAPIKey               = os.Getenv("UPLINK_API_KEY")
+	sjEncryptionPassphrase = os.Getenv("UPLINK_PASSPHRASE")
+	sjBucket               = os.Getenv("UPLINK_BUCKET")
+
+	Bucket *uplink.Bucket
 
 	mUser       = metrics.NewMeter()
 	mRepo       = metrics.NewMeter()
 	mSize       = metrics.NewMeter()
 	mQueuedSize = metrics.NewMeter()
 	mTask       = metrics.NewCounter()
+	mWorking    = metrics.NewCounter()
 )
 
+func RecalibrateDefaultHTTP() {
+	http.DefaultTransport.(*http.Transport).MaxIdleConns = ConcurrentUsers * ConcurrentRepos * 2
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = ConcurrentUsers * ConcurrentRepos * 2
+}
+
+func Retry429(res *resty.Response, err error) bool {
+	if res != nil && res.StatusCode() == 429 {
+		fmt.Println("Too many requests... slowing down.", res)
+
+		return true
+	}
+
+	return false
+}
+
 type Repository struct {
-	FullName string `json:"full_name"`
-	GitURL   string `json:"git_url"`
-	Size     int64  `json:"size"`
+	FullName  string    `json:"full_name"`
+	GitURL    string    `json:"git_url"`
+	Size      int64     `json:"size"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (repo *Repository) NeedsUpdate(ctx context.Context) bool {
+	path := repo.FullName + ".tar.gz"
+
+	obj, err := Bucket.OpenObject(ctx, path)
+	if err != nil {
+		//fmt.Println("NeedsUpdate:", repo, "Object doesn't exist.", err)
+		return true
+	}
+
+	updatedAtString, ok := obj.Meta.Metadata["UpdatedAt"]
+	if !ok {
+		//fmt.Println("NeedsUpdate:", repo, "Object doesn't have updated at.")
+		return true
+	}
+
+	updatedAt, err := time.Parse(time.RFC3339, updatedAtString)
+	if err != nil {
+		//fmt.Println("NeedsUpdate:", repo, "Object has invalid updated at.", err)
+		return true
+	}
+
+	//fmt.Println("NeedsUpdate?:", repo, updatedAt, "equal?", repo.UpdatedAt.Equal(updatedAt))
+
+	return !repo.UpdatedAt.Equal(updatedAt)
 }
 
 func (repo *Repository) Clone(ctx context.Context) (err error) {
@@ -73,6 +125,7 @@ func (repo *Repository) Archive(ctx context.Context) (err error) {
 	// Purge existing archive if it exists.
 	os.Remove(path)
 
+	// Create archive and remove working directory.
 	err = archiver.Archive([]string{repo.FullName}, path)
 	if err != nil {
 		return err
@@ -83,13 +136,30 @@ func (repo *Repository) Archive(ctx context.Context) (err error) {
 		return err
 	}
 
-	// FIXME: Upload to storj... and then remove.
-	/*
-		err = os.RemoveAll(path)
-		if err != nil {
-			return err
-		}
-	*/
+	// Upload archive to Storj and remove local archive.
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	err = Bucket.UploadObject(ctx, path, file, &uplink.UploadOptions{
+		ContentType: "application/gzip",
+		Metadata: map[string]string{
+			"UpdatedAt": repo.UpdatedAt.Format(time.RFC3339),
+		},
+	})
+	if err != nil {
+		fmt.Println("Failed to upload:", repo, path, err)
+		return err
+	}
+
+	fmt.Println("Upload complete:", repo, path)
+
+	err = os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -108,9 +178,22 @@ func (repos Repositories) Mirror(ctx context.Context, concurrent int) (err error
 		g.Go(func() (err error) {
 			defer func() {
 				<-sem
+				mWorking.Dec(1)
 			}()
 
+			mWorking.Inc(1)
 			mQueuedSize.Mark(repo.Size)
+
+			if !repo.NeedsUpdate(ctx) {
+				fmt.Println("Skipping repository that doesn't need updated:", repo)
+				return nil
+			}
+
+			err = ctx.Err()
+			if err != nil {
+				fmt.Println("Bailing...", repo)
+				return err
+			}
 
 			err = repo.Clone(ctx)
 			if err != nil {
@@ -140,6 +223,13 @@ func (repos Repositories) Mirror(ctx context.Context, concurrent int) (err error
 
 			return nil
 		})
+
+		err = ctx.Err()
+		if err != nil {
+			fmt.Println("Bailing...", repo)
+			return err
+		}
+
 	}
 
 	return g.Wait()
@@ -238,18 +328,23 @@ func (t *Task) lock() (username Username, err error) {
 	return Username(u), nil
 }
 
-func (t *Task) relock() error {
+func (t *Task) relock() (err error) {
 	url := SupervisorURL + "/lock/" + string(t.username)
 
-	res, err := Client.R().
-		SetContext(t.t.Context(nil)).
-		Post(url)
-	if err != nil {
+	for i := 3; i > 0; i-- {
+		var res *resty.Response
+		res, err = Client.R().
+			SetContext(t.t.Context(nil)).
+			Post(url)
+		if err == nil || err == context.Canceled {
+			return nil
+		}
+
 		fmt.Println("Failed to relock:", t.username, err, res.Status())
+	}
+	if err != nil {
 		return err
 	}
-
-	//fmt.Println("Relocked:", t.username)
 
 	return nil
 }
@@ -269,6 +364,20 @@ func (t *Task) complete() error {
 	fmt.Println("Completed:", t.username, len(t.repos))
 
 	mUser.Mark(1)
+
+	return nil
+}
+
+func (t *Task) fail() error {
+	url := SupervisorURL + "/lock/" + string(t.username) + "/error"
+
+	res, err := Client.R().Post(url)
+	if err != nil {
+		fmt.Println("Failed to submit failure:", t.username, err, res.Status())
+		return err
+	}
+
+	fmt.Println("Failed:", t.username, len(t.repos))
 
 	return nil
 }
@@ -325,7 +434,12 @@ func (t *Task) Stop() error {
 }
 
 func (t *Task) Done() error {
-	return t.t.Wait()
+	err := t.t.Wait()
+	if err != nil {
+		t.fail()
+	}
+
+	return err
 }
 
 type Manager struct {
@@ -362,11 +476,15 @@ func (m *Manager) loop() error {
 			case syscall.SIGUSR1:
 				fmt.Println("Decreasing queue by 1")
 				m.queue.Resize(m.queue.Cap() - 1)
+
+				ConcurrentUsers = int(m.queue.Cap())
+				RecalibrateDefaultHTTP()
 			case syscall.SIGUSR2:
 				fmt.Println("Increasing queue by 1")
 				m.queue.Resize(m.queue.Cap() + 1)
 
-				http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = int(m.queue.Cap()) * ConcurrentRepos
+				ConcurrentUsers = int(m.queue.Cap())
+				RecalibrateDefaultHTTP()
 			}
 		case <-time.After(10 * time.Second):
 			t := table.NewWriter()
@@ -378,7 +496,9 @@ func (m *Manager) loop() error {
 				{"repo", mRepo.RateMean(), mRepo.Rate1(), mRepo.Rate5()},
 				{"size", mSize.RateMean(), mSize.Rate1(), mSize.Rate5()},
 				{"queued size", mQueuedSize.RateMean(), mQueuedSize.Rate1(), mQueuedSize.Rate5()},
+				{"working", mWorking.Count()},
 				{"task", mTask.Count()},
+				{"queue depth", m.queue.Len()},
 			})
 			t.Render()
 		case m.queue.In() <- true:
@@ -395,8 +515,7 @@ func (m *Manager) loop() error {
 
 				err = task.Done()
 				if err != nil {
-					// FIXME: Probably only log a warning here and continue?
-					m.t.Kill(err)
+					fmt.Println("Warning: Syncing failed:", err)
 					return
 				}
 			}()
@@ -416,10 +535,55 @@ func (m *Manager) Done() error {
 	return m.t.Wait()
 }
 
+func OpenBucket(ctx context.Context) (bucket *uplink.Bucket, err error) {
+	fmt.Println("Parsing API Key...")
+	apiKey, err := uplink.ParseAPIKey(sjAPIKey)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Creating Uplink...")
+	upl, err := uplink.NewUplink(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Opening Project...")
+	proj, err := upl.OpenProject(ctx, sjSatellite, apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Salting...")
+	encryptionKey, err := proj.SaltedKeyFromPassphrase(ctx, sjEncryptionPassphrase)
+	if err != nil {
+		return nil, err
+	}
+
+	access := uplink.NewEncryptionAccessWithDefaultKey(*encryptionKey)
+
+	fmt.Println("Opening Bucket...")
+	bucket, err = proj.OpenBucket(ctx, sjBucket, access)
+	if err != nil {
+		return nil, err
+	}
+
+	return bucket, nil
+}
+
 func main() {
-	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = ConcurrentUsers * ConcurrentRepos
+	var err error
+
+	go http.ListenAndServe("localhost:8080", nil)
+
+	RecalibrateDefaultHTTP()
 
 	ctx := context.Background()
+
+	Bucket, err = OpenBucket(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	m, err := NewManager(ctx, ConcurrentUsers)
 	if err != nil {
