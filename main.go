@@ -6,6 +6,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -14,14 +15,10 @@ import (
 	"github.com/eapache/channels"
 	"github.com/go-resty/resty/v2"
 	"github.com/jedib0t/go-pretty/table"
-	"github.com/mholt/archiver"
 	"github.com/rcrowley/go-metrics"
 	"github.com/spacemonkeygo/errors"
 	"github.com/tomnomnom/linkheader"
 	"golang.org/x/sync/errgroup"
-	"gopkg.in/src-d/go-git.v4"
-	gitPPP "gopkg.in/src-d/go-git.v4/plumbing/protocol/packp"
-	gitPT "gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/tomb.v2"
 	"storj.io/storj/lib/uplink"
 )
@@ -77,7 +74,7 @@ type Repository struct {
 }
 
 func (repo *Repository) NeedsUpdate(ctx context.Context) bool {
-	path := repo.FullName + ".tar.gz"
+	path := repo.FullName + ".bundle"
 
 	obj, err := Bucket.OpenObject(ctx, path)
 	if err != nil {
@@ -108,10 +105,11 @@ func (repo *Repository) Clone(ctx context.Context) (err error) {
 
 	fmt.Println("Cloning:", repo)
 
-	_, err = git.PlainCloneContext(ctx, repo.FullName, true, &git.CloneOptions{
-		URL:  repo.GitURL,
-		Tags: git.AllTags,
-	})
+	cmd := exec.Command("git", "clone", "--mirror", repo.GitURL, repo.FullName)
+	//cmd.Stdout = os.Stdout
+	//cmd.Stderr = os.Stderr
+
+	cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -120,13 +118,17 @@ func (repo *Repository) Clone(ctx context.Context) (err error) {
 }
 
 func (repo *Repository) Archive(ctx context.Context) (err error) {
-	path := repo.FullName + ".tar.gz"
+	path := repo.FullName + ".bundle"
 
 	// Purge existing archive if it exists.
-	os.Remove(path)
+	os.RemoveAll(path)
 
 	// Create archive and remove working directory.
-	err = archiver.Archive([]string{repo.FullName}, path)
+	cmd := exec.Command("git", "--git-dir", repo.FullName, "bundle", "create", path, "--all")
+	//cmd.Stdout = os.Stdout
+	//cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -197,19 +199,6 @@ func (repos Repositories) Mirror(ctx context.Context, concurrent int) (err error
 
 			err = repo.Clone(ctx)
 			if err != nil {
-				// Skip empty repositories.
-				if err == gitPT.ErrEmptyRemoteRepository {
-					fmt.Println("Skipping empty repository:", repo)
-					return nil
-				}
-
-				switch err.(type) {
-				// Skip "non-repo" (e.g. when a DMCA take down has removed the repo).
-				case *gitPPP.ErrUnexpectedData:
-					fmt.Println("Skipping invalid repository:", repo, err)
-					return nil
-				}
-
 				return err
 			}
 
@@ -438,6 +427,8 @@ func (t *Task) Done() error {
 	if err != nil {
 		t.fail()
 	}
+
+	os.RemoveAll(string(t.username))
 
 	return err
 }

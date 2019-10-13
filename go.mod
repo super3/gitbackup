@@ -6,14 +6,11 @@ require (
 	github.com/VividCortex/gohistogram v1.0.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/eapache/channels v1.1.0
-	github.com/eapache/queue v1.1.0 // indirect
 	github.com/go-kit/kit v0.9.0
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/go-resty/resty/v2 v2.0.0
-	github.com/golang/snappy v0.0.1 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
-	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
@@ -27,4 +24,5 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
+	storj.io/storj v0.23.2
 )
