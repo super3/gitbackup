@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mkdir -p user_dumps; jest --forceExit",
-    "coverage": "jest --forceExit --coverage"
+    "coverage": "jest --forceExit --coverage",
+    "postinstall": "curl -L https://github.com/storj/storj/releases/latest/download/uplink_linux_amd64.zip -O && unzip uplink_linux_amd64.zip"
   },
   "repository": {
     "type": "git",

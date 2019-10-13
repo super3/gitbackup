@@ -63,3 +63,5 @@ typings/
 # username files
 user_dumps/
 repos/
+
+uplink_*
