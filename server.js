@@ -73,7 +73,7 @@ router.get('/userlist/:page', async ctx => {
 				.forEach(user => results.add(user))
 
 			if(results.length >= 10 || newCursor === '0') {
-				return [...results];
+				return [...results].slice(0, 10);
 			}
 
 			cursor = newCursor;
