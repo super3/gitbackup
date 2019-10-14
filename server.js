@@ -52,20 +52,21 @@ router.get('/user/:user/repos', async ctx => {
 });
 
 router.get('/userlist/:page', async ctx => {
-	const allUsers = await redis.zrange('tracked', 0, -1);
 	const total = Number(await redis.zcard('tracked'));
 
 	const perPage = 6;
 	const totalPages = Math.ceil(total / perPage);
 	const page = Number(ctx.params.page);
 
-	allUsers.sort();
-
 	const {filter} = ctx.query;
 
-	const filteredUsers = typeof filter === 'string' ? allUsers.filter(user => user.includes(filter)) : allUsers;
+	const filteredUsers = typeof filter === 'string' && filter.length > 0
+		? (await redis.zscan('tracked', 0, 'MATCH', `*${filter}*`, 'COUNT', 10))[1].filter((element, index) => index % 2 === 0)
+		: await redis.zrevrangebyscore('tracked', '+inf', 0, 'LIMIT', page * perPage, perPage);
 
-	const users = await Promise.all(filteredUsers.slice(page * perPage, (page + 1) * perPage).map(async username => ({
+	console.log(filteredUsers);
+
+	const users = await Promise.all(filteredUsers.map(async username => ({
 		username,
 		totalRepos: Number(await redis.get(`user:${username}`)),
 		status:
