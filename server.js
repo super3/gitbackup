@@ -67,7 +67,7 @@ router.get('/userlist/:page', async ctx => {
 		let cursor = 0;
 
 		for(let i = 0; i < iterations; i++) {
-			const [newCursor, users] = await redis.zscan('tracked', cursor, 'MATCH', `*${filter}*`)
+			const [newCursor, users] = await redis.zscan('tracked', cursor, 'MATCH', `*${filter}*`, 'COUNT', 100)
 
 			users
 				.filter((element, index) => index % 2 === 0)
