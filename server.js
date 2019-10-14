@@ -61,22 +61,23 @@ router.get('/userlist/:page', async ctx => {
 	const {filter} = ctx.query;
 
 	async function search() {
-		const iterations = 100;
+		const iterations = 1000;
 
 		const results = new Set();
-		let cursor = 0;
 
-		for(let i = 0; i < iterations; i++) {
-			const [newCursor, users] = await redis.zscan('tracked', cursor, 'MATCH', `*${filter}*`, 'COUNT', 1000)
+		for(let cursor = 0; ;) {
+			const [newCursor, users] = await redis.zscan('tracked', cursor, 'MATCH', `*${filter}*`)
 
 			users
 				.filter((element, index) => index % 2 === 0)
 				.forEach(user => results.add(user))
 
+			if(results.length >= 10 || newCursor === '0') {
+				return [...results];
+			}
+
 			cursor = newCursor;
 		}
-
-		return [...results];
 	}
 
 	const filteredUsers = typeof filter === 'string' && filter.length > 0
