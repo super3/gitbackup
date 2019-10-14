@@ -7,7 +7,7 @@ const redis = require('../redis');
 	const users = JSON.parse(json);
 
 	for(const user of users) {
-		await redis.zadd('tracked', 0, user);
+		await redis.zadd('tracked', 'NX', 0, user);
 	}
 
 	process.exit(0);
