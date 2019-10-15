@@ -72,7 +72,7 @@ filters: {
 	  return value.charAt(0).toUpperCase() + value.slice(1)
   },
   truncateUsername: function (value) {
-	  const length = 50;
+	  const length = 30;
 
 	  if(!value) return '';
 
