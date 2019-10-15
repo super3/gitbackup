@@ -1,6 +1,6 @@
 const fs = require('fs');
 const ndjson = require('iterable-ndjson');
-const redis = require('./redis');
+const redis = require('../redis');
 
 const file = process.argv[2];
 const limit = Number(process.argv[3]) || Infinity;
