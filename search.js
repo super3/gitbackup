@@ -39,6 +39,12 @@ class Search {
 			for(const user of users) {
 				await this.index(user);
 			}
+
+			cursor = newCursor;
+
+			if(cursor === 0) {
+				return;
+			}
 		}
 	}
 
