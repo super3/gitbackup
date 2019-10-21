@@ -152,12 +152,14 @@ router.post('/lock', async ctx => {
 		}
 	}
 
+	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(username);
 });
 
 router.post('/lock/:username', async ctx => {
 	await redis.expire(`lock:${ctx.params.username}`, 10);
 
+	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(true);
 });
 
@@ -176,7 +178,13 @@ router.post('/lock/:username/complete', async ctx => {
 		.incrby('stats:repos', Number(totalRepos))
 		.exec();
 
+	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(true);
+});
+
+router.get('/lock/:username/last_synced', async ctx => {
+	ctx.set('Content-Type', 'application/json');
+	ctx.body = JSON.stringify(Number(await redis.zscore('tracked', ctx.params.username)));
 });
 
 router.post('/lock/:username/error', async ctx => {
@@ -186,6 +194,7 @@ router.post('/lock/:username/error', async ctx => {
 		.set(`user:${ctx.params.username}:error`, 'true')
 		.exec();
 
+	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(true);
 });
 

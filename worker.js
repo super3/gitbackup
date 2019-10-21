@@ -5,12 +5,13 @@ const execa = require('execa');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
+const STORJ = 'STORJ' in process.env;
 
 if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
 }
 
-async function cloneUser(username) {
+async function cloneUser({ username, lastSynced }) {
 	const repos = [];
 
 	// get all repositories
@@ -91,6 +92,10 @@ async function cloneUser(username) {
 				cwd: repoPath
 			});
 		}
+
+		if(STORJ === true) {
+			await execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://gitbackup/${repo.full_name}.zip` ])
+		}
 	}
 
 	/*
@@ -113,13 +118,15 @@ async function cloneUser(username) {
 		const username = (await axios.post('http://localhost:8000/lock')).data;
 
 		try {
+			const lastSynced = (await axios.post(`http://localhost/lock/${username}/last_synced`)).data;
+
 			const updateLock = setInterval(async () => {
 				await axios.post(`http://localhost:8000/lock/${username}`)
 			}, 5000);
 
 			const {
 				totalRepos
-			} = await cloneUser(username);
+			} = await cloneUser({ username, lastSynced });
 
 			clearInterval(updateLock);
 
