@@ -2,7 +2,7 @@ const redis = require('../redis');
 const search = require('../search');
 
 (async () => {
-	const counter = 0;
+	let counter = 0;
 
 	for(let cursor = 0; ;) {
 		const [newCursor, _users] = await redis.zscan('tracked', cursor, 'COUNT', '1000');
