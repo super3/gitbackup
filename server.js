@@ -6,7 +6,8 @@ const koaSend = require('koa-send');
 const prettyBytes = require('pretty-bytes');
 const humanNumber = require('human-number');
 const df = require('@sindresorhus/df');
-const redis = require('./redis.js');
+const redis = require('./redis');
+const search = require('./search');
 
 const app = module.exports = new Koa();
 const router = new Router();
@@ -60,29 +61,21 @@ router.get('/userlist/:page', async ctx => {
 
 	const {filter} = ctx.query;
 
-	async function search() {
-		const iterations = 1000;
+	const getSearchResults = async () => {
+		const results = await search.query(filter);
 
-		const results = new Set();
-
-		for(let cursor = 0; ;) {
-			const [newCursor, users] = await redis.zscan('tracked', cursor, 'MATCH', `*${filter}*`)
-
-			users
-				.filter((element, index) => index % 2 === 0)
-				.forEach(user => results.add(user))
-
-			if(results.length >= 10 || newCursor === '0') {
-				return [...results].slice(0, 10);
-			}
-
-			cursor = newCursor;
+		if(await redis.score('tracked', filter) !== null) {
+			results.push(filter);
 		}
-	}
+
+		return results;
+	};
+
+	const getPage = async () => await redis.zrevrangebyscore('tracked', '+inf', '-inf', 'LIMIT', page * perPage, perPage);
 
 	const filteredUsers = typeof filter === 'string' && filter.length > 0
-		? await search()
-		: await redis.zrevrangebyscore('tracked', '+inf', '-inf', 'LIMIT', page * perPage, perPage);
+		? await getSearchResults()
+		: await getPage();
 
 	const users = await Promise.all(filteredUsers.map(async username => ({
 		username,
