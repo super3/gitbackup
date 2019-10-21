@@ -64,7 +64,7 @@ router.get('/userlist/:page', async ctx => {
 	const getSearchResults = async () => {
 		const results = await search.query(filter);
 
-		if(await redis.score('tracked', filter) !== null) {
+		if(typeof await redis.score('tracked', filter) === 'number') {
 			results.push(filter);
 		}
 
