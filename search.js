@@ -30,24 +30,6 @@ class Search {
 		}
 	}
 
-	async indexTrackedUsers() {
-		for(let cursor = 0; ;) {
-			const [newCursor, _users] = await redis.zscan('tracked', cursor)
-
-			const users = _users.filter((element, index) => index % 2 === 0);
-
-			for(const user of users) {
-				await this.index(user);
-			}
-
-			cursor = newCursor;
-
-			if(cursor === 0) {
-				return;
-			}
-		}
-	}
-
 	async query(input) {
 		const key = `search:${this.name}:q:${input}`;
 
