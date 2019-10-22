@@ -122,6 +122,8 @@ async function cloneUser({ username, lastSynced }) {
 }
 
 (async () => {
+	await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 60000)));
+
 	for(; ;) {
 		const username = (await axios.post('http://localhost:8000/lock')).data;
 
