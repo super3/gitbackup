@@ -17,14 +17,24 @@ async function cloneUser({ username, lastSynced }) {
 	// get all repositories
 
 	for(let i = 1; ; i++) {
-		const {data} = await axios.get(`https://api.github.com/users/${username}/repos`, {
-			params: {
-				page: i,
-				per_page: 100,
-				client_id,
-				client_secret
-			}
-		});
+		try {
+			const {data} = await axios.get(`https://api.github.com/users/${username}/repos`, {
+				params: {
+					page: i,
+					per_page: 100,
+					client_id,
+					client_secret
+				}
+			});
+		} catch(error) {
+			console.log(error);
+
+			const timeout = 5000 + Math.floor(Math.random() * 5000);
+			console.log(`Request to Github failed. Waiting ${timeout / 1000} seconds.`);
+
+			await new Promise(resolve => setTimeout(resolve, timeout));
+			throw new Error('Request to Github failed');
+		}
 
 		if(data.length === 0) {
 			break;
