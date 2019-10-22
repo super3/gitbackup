@@ -35,7 +35,15 @@ async function cloneUser({ username, lastSynced }) {
 
 	console.log(username, 'has', repos.length, 'repositories');
 
+	lastSynced = new Date(lastSynced);
+
 	for(const repo of repos) {
+		const lastUpdated = new Date(repo.updated_at);
+
+		if(lastUpdated < lastSynced) {
+			continue;
+		}
+
 		const repoPath = `${__dirname}/repos/${repo.full_name}`;
 
 		let exists = true;
@@ -121,7 +129,7 @@ async function cloneUser({ username, lastSynced }) {
 			const lastSynced = (await axios.get(`http://localhost/lock/${username}/last_synced`)).data;
 
 			const updateLock = setInterval(async () => {
-				await axios.post(`http://localhost:8000/lock/${username}`)
+				await axios.post(`http://localhost:8000/lock/${username}`);
 			}, 5000);
 
 			const {
