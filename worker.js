@@ -118,7 +118,7 @@ async function cloneUser({ username, lastSynced }) {
 		const username = (await axios.post('http://localhost:8000/lock')).data;
 
 		try {
-			const lastSynced = (await axios.post(`http://localhost/lock/${username}/last_synced`)).data;
+			const lastSynced = (await axios.get(`http://localhost/lock/${username}/last_synced`)).data;
 
 			const updateLock = setInterval(async () => {
 				await axios.post(`http://localhost:8000/lock/${username}`)
