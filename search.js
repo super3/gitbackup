@@ -31,7 +31,7 @@ class Search {
 	}
 
 	async query(input) {
-		const key = `search:${this.name}:q:${input}`;
+		const key = `search:${this.name}:q:${input.toLowerCase()}`;
 
 		return await redis.smembers(key);
 	}

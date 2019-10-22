@@ -112,6 +112,7 @@ router.get('/actorlogins', async ctx => {
 router.get('/adduser/:user', async ctx => {
 	if(await githubUserExists(ctx.params.user)) {
 		await redis.zadd('tracked', 0, ctx.params.user);
+		await search.index(ctx.params.user);
 	}
 });
 
