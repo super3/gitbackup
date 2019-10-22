@@ -26,6 +26,12 @@ async function cloneUser({ username, lastSynced }) {
 					client_secret
 				}
 			});
+
+			if(data.length === 0) {
+				break;
+			}
+
+			repos.push(...data);
 		} catch(error) {
 			console.log(error);
 
@@ -35,12 +41,6 @@ async function cloneUser({ username, lastSynced }) {
 			await new Promise(resolve => setTimeout(resolve, timeout));
 			throw new Error('Request to Github failed');
 		}
-
-		if(data.length === 0) {
-			break;
-		}
-
-		repos.push(...data);
 	}
 
 	console.log(username, 'has', repos.length, 'repositories');
