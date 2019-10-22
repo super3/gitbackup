@@ -45,10 +45,13 @@ async function cloneUser({ username, lastSynced }) {
 
 	console.log(username, 'has', repos.length, 'repositories');
 
+	const _lastSynced = lastSynced;
 	lastSynced = new Date(lastSynced);
 
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
+
+		console.log({ lastUpdated, lastSynced, updated_at: repo.updated_at, _lastSynced });
 
 		if(lastUpdated < lastSynced) {
 			continue;
@@ -132,7 +135,7 @@ async function cloneUser({ username, lastSynced }) {
 }
 
 (async () => {
-	await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 60000)));
+	//await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 60000)));
 
 	for(; ;) {
 		const username = (await axios.post('http://localhost:8000/lock')).data;

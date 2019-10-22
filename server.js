@@ -178,7 +178,7 @@ router.post('/lock/:username/complete', async ctx => {
 
 router.get('/lock/:username/last_synced', async ctx => {
 	ctx.set('Content-Type', 'application/json');
-	ctx.body = JSON.stringify(Number(await redis.zscore('tracked', ctx.params.username)));
+	ctx.body = JSON.stringify(Math.max(Number(await redis.zscore('tracked', ctx.params.username)), 0));
 });
 
 router.post('/lock/:username/error', async ctx => {
