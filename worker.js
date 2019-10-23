@@ -65,7 +65,7 @@ async function cloneUser({ username, lastSynced }) {
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
 
-		console.log({ lastUpdated, lastSynced, updated_at: repo.updated_at, _lastSynced });
+		console.log({ lastUpdated, lastSynced, updated_at: repo.updated_at });
 
 		// skip if repository hasn't been updated since last sync
 		if(lastUpdated < lastSynced) {
