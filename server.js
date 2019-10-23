@@ -14,6 +14,10 @@ const router = new Router();
 const PORT = 8000;
 
 async function githubUserExists(partialUser) {
+	if(partialUser.trim() === '') {
+		return false;
+	}
+
 	try {
 		await axios.get(`https://github.com/${partialUser}`);
 		return true;
@@ -59,13 +63,15 @@ router.get('/userlist/:page', async ctx => {
 	const totalPages = Math.ceil(total / perPage);
 	const page = Number(ctx.params.page);
 
-	const {filter} = ctx.query;
+	const filter = typeof ctx.query.filter === 'string' ? ctx.query.filter : '';
+
+	const exists = typeof await redis.zscore('tracked', filter) === 'string';
 
 	const getSearchResults = async () => {
 		const results = await search.query(filter);
 
-		if(typeof await redis.zscore('tracked', filter) === 'string') {
-			results.push(filter);
+		if(exists === true) {
+			results.unshift(filter);
 		}
 
 		return results;
@@ -73,7 +79,7 @@ router.get('/userlist/:page', async ctx => {
 
 	const getPage = async () => await redis.zrevrangebyscore('tracked', '+inf', '-inf', 'LIMIT', page * perPage, perPage);
 
-	const filteredUsers = typeof filter === 'string' && filter.length > 0
+	const filteredUsers = filter.trim().length > 0
 		? await getSearchResults()
 		: await getPage();
 
@@ -95,6 +101,7 @@ router.get('/userlist/:page', async ctx => {
 
 	ctx.body = JSON.stringify({
 		users,
+		exists,
 		total,
 		totalPages,
 		perPage

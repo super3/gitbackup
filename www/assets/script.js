@@ -12,7 +12,8 @@ const app = new Vue({
 	totalPages: 0,
 	totalUsers: 0,
 	cancelPreviousCheckUser: null,
-	stats: null
+	stats: null,
+	exists: false
   },
   methods: {
 	async checkUser() {
@@ -37,13 +38,14 @@ const app = new Vue({
 	async loadPage(i) {
 	  i = typeof i !== 'undefined' ? i : this.page;
 
-	  const {data: {users, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`, {
+	  const {data: {users, exists, total, totalPages}} = await axios.get(`/userlist/${i.toString()}`, {
 		  params: {
 			  filter: this.search
 		  }
 	  });
 
 	  this.users = users;
+	  this.exists = exists;
 	  this.page = i;
 	  this.totalPages = totalPages;
 	  this.totalUsers = total;
