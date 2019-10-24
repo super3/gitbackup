@@ -135,7 +135,7 @@ async function cloneUser({ username, lastSynced }) {
 
 		// push to Storj
 		if(STORJ === true) {
-			await execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://gitbackup/${repo.full_name}.zip` ])
+			await execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://github.com/${repo.full_name}.zip` ])
 		}
 	}
 
