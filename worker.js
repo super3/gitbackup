@@ -6,6 +6,7 @@ const execa = require('execa');
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const STORJ = 'STORJ' in process.env;
+const DELETE = 'DELETE' in process.env;
 
 if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
@@ -135,7 +136,12 @@ async function cloneUser({ username, lastSynced }) {
 
 		// push to Storj
 		if(STORJ === true) {
-			await execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://github.com/${repo.full_name}.zip` ])
+			await execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://github.com/${repo.full_name}.zip` ]);
+		}
+
+		if(DELETE === true) {
+			await execa('rm', [ '-rf', repoPath ]);
+			await execa('rm', [ '-rf', repoZip ]);
 		}
 	}
 
