@@ -35,6 +35,7 @@ router.get('/adduser/:user', async ctx => {
 
 	if (userExists) {
 		 const added = await redis.zadd('tracked', -1, ctx.params.user) === 1;
+		 await search.index(ctx.params.user);
 		 ctx.body = added ? 'added' : 'exists';
 	} else {
 		ctx.throw(500, "User/organization doesn't exist!");
