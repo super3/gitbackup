@@ -132,7 +132,10 @@ async function cloneUser({ username, lastSynced }) {
 			});
 		}
 
-		await fs.mkdir(`/storj/github.com/${repo.full_name.split('/')[0]}`);
+		await fs.mkdir(`/storj/github.com/${repo.full_name.split('/')[0]}`, {
+			recursive: true
+		});
+
 		await fs.copyFile(repoZip, `/storj/github.com/${repo.full_name}.zip`);
 
 		await execa('rm', [ '-rf', repoZip ]);
