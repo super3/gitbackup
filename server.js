@@ -45,7 +45,7 @@ router.get('/adduser/:user', async ctx => {
 router.get('/user/:user/repos', async ctx => {
 	const path = `${__dirname}/repos/${ctx.params.user}`;
 
-	const files = await fs.readdir(`${__dirname}/repos/${ctx.params.user}`);
+	const files = await fs.readdir(`/storj/github.com/${ctx.params.user}`);
 
 	// filter only directories
 	const repos = (await Promise.all(files.map(async file => {
