@@ -136,6 +136,13 @@ async function cloneUser({ username, lastSynced }) {
 
 		// push to Storj
 		if(STORJ === true) {
+			await fs.mkdir(`/storj/${repo.full_name.split('/')[0]}`);
+			await fs.copyFile(repoZip, `/storj/${repo.full_name}.zip`);
+
+			await execa('rm', [ '-rf', repoZip ]);
+			await execa('rm', [ '-rf', repoPath ]);
+
+			/*
 			const uplink = execa(`${__dirname}/uplink_linux_amd64`, [ 'cp', repoZip, `sj://github.com/${repo.full_name}.zip` ], {
 				forceKillAfterTimeout: 60 * 60 * 1000 // 1 hour
 			});
@@ -144,11 +151,7 @@ async function cloneUser({ username, lastSynced }) {
 			uplink.stderr.pipe(process.stderr);
 
 			await uplink;
-		}
-
-		if(DELETE === true) {
-			await execa('rm', [ '-rf', repoPath ]);
-			await execa('rm', [ '-rf', repoZip ]);
+			*/
 		}
 	}
 
