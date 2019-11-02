@@ -47,12 +47,8 @@ router.get('/user/:user/repos', async ctx => {
 
 	const files = await fs.readdir(`/storj/github.com/${ctx.params.user}`);
 
-	// filter only directories
-	const repos = (await Promise.all(files.map(async file => {
-		const stat = await fs.stat(`${path}/${file}`);
-
-		return stat.isDirectory() ? file : false;
-	}))).filter(file => file !== false);
+	// remove .zip
+	const repos = files.map(file => file.split('.').slice(0, -1).join('.'));
 
 	ctx.body = repos;
 });
