@@ -197,7 +197,7 @@ router.post('/lock/:username/error', async ctx => {
 });
 
 router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
-	root: `${__dirname}/repos`,
+	root: `/storj/github.com`,
 	maxAge: 0
 }));
 
