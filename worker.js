@@ -64,7 +64,7 @@ async function cloneUser({ username, lastSynced }) {
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
 
-		console.log({ lastUpdated, lastSynced, updated_at: repo.updated_at });
+		console.log(repo.full_name, { lastUpdated, lastSynced, updated_at: repo.updated_at });
 
 		// skip if repository hasn't been updated since last sync
 		if(lastUpdated < lastSynced) {
@@ -73,36 +73,19 @@ async function cloneUser({ username, lastSynced }) {
 
 		const repoPath = `${__dirname}/repos/${repo.full_name}`;
 
-		let exists = true;
-
-		// check if repository has been cloned before
 		try {
 			await fs.stat(repoPath);
+			await execa('rm', [ '-rf', repoPath ]);
 		} catch(err) {
-			exists = false;
+
 		}
 
-		if(exists === true) {
-			// already exists
-			console.log(repo.full_name, 'already exists, fetching');
+		console.log(repo.full_name, 'cloning');
 
-			const gitRepo = await git.Repository.open(`${repoPath}/.git`);
-
-			// fetch
-			try {
-				await gitRepo.fetchAll();
-			} catch(err) {
-				console.log('fetch failed');
-			}
-		} else {
-			// clone from fresh
-			console.log(repo.full_name, 'cloning from fresh');
-
-			try {
-				await git.Clone(repo.git_url, repoPath);
-			} catch(err) {
-				console.log('clone failed');
-			}
+		try {
+			await execa('git', [ 'clone', '-q', repo.git_url, repoPath]);
+		} catch(err) {
+			console.log(repo.full_name, 'clone failed');
 		}
 
 		const repoZip = `${repoPath}.zip`;
@@ -127,19 +110,48 @@ async function cloneUser({ username, lastSynced }) {
 
 		// make zip
 		if(cloned === true) {
+			console.log(repo.full_name, 'zipping');
 			await execa('zip', [ '-r', repoZip, './' ], {
 				cwd: repoPath
 			});
 		}
 
+		console.log(repo.full_name, 'mkdir storj parent directory');
+
 		await fs.mkdir(`/storj/github.com/${repo.full_name.split('/')[0]}`, {
 			recursive: true
 		});
 
-		await fs.copyFile(repoZip, `/storj/github.com/${repo.full_name}.zip`);
+		for (let retries = 3; retries > 0; retries--) {
+			try {
+				const stat = await fs.stat(repoZip);
+				const rate = 1000.0 / (100 * 1024); // 100KiB per second
+				const minT = 60 * 1000; // Give at least 60 seconds to finish
+				const maxT = 4 * 60 * 60 * 1000; // No more than 4 hours
 
+				const timeout = Math.min(stat.size * rate + minT, maxT);
+
+				console.log(repo.full_name, 'copy zip to storj', retries, stat.size, timeout);
+
+				const subprocess = execa('cp', [repoZip, `/storj/github.com/${repo.full_name}.zip`]);
+
+				setTimeout(() => {
+					subprocess.cancel();
+				}, timeout);
+
+				await subprocess;
+
+				break;
+			} catch(err) {
+				console.log(repo.full_name, 'failed, retrying...', err);
+			}
+		}
+
+		console.log(repo.full_name, 'cleaning up');
 		await execa('rm', [ '-rf', repoZip ]);
 		await execa('rm', [ '-rf', repoPath ]);
+
+		console.log(repo.full_name, 'done');
 	}
 
 	// wait 5 seconds after each user
