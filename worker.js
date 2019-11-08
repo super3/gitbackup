@@ -58,6 +58,7 @@ async function getRepos({ username }) {
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
 	const repos = await getRepos({ username });
+	let storageDelta = 0;
 
 	console.log(username, 'has', repos.length, 'repositories');
 
@@ -122,6 +123,16 @@ async function cloneUser({ username, lastSynced }) {
 			recursive: true
 		});
 
+		const storjZip = `/storj/github.com/${repo.full_name}.zip`;
+
+		try {
+			// remove old zip from total storage usage
+			const {size} = await fs.stat(storjZip);
+			storageDelta -= size;
+		} catch(err) {
+
+		}
+
 		for (let retries = 3; retries > 0; retries--) {
 			try {
 				const stat = await fs.stat(repoZip);
@@ -133,7 +144,7 @@ async function cloneUser({ username, lastSynced }) {
 
 				console.log(repo.full_name, 'copy zip to storj', retries, stat.size, timeout);
 
-				const subprocess = execa('cp', [repoZip, `/storj/github.com/${repo.full_name}.zip`]);
+				const subprocess = execa('cp', [repoZip, storjZip]);
 
 				setTimeout(() => {
 					subprocess.cancel();
@@ -144,8 +155,16 @@ async function cloneUser({ username, lastSynced }) {
 				break;
 			} catch(err) {
 				console.log(repo.full_name, 'failed, retrying...', err);
+
+				if(retries === 1) {
+					throw new Error('Failed to copy to Storj');
+				}
 			}
 		}
+
+		// add new zip to total storage usage
+		const {size} = await fs.stat(storjZip);
+		storageDelta += size;
 
 		console.log(repo.full_name, 'cleaning up');
 		await execa('rm', [ '-rf', repoZip ]);
@@ -158,7 +177,8 @@ async function cloneUser({ username, lastSynced }) {
 	await new Promise(resolve => setTimeout(resolve, 5000));
 
 	return {
-		totalRepos: repos.length
+		totalRepos: repos.length,
+		storageDelta
 	};
 }
 
@@ -187,7 +207,8 @@ async function cloneUser({ username, lastSynced }) {
 
 			// sync user
 			const {
-				totalRepos
+				totalRepos,
+				storageDelta
 			} = await cloneUser({ username, lastSynced });
 
 			// stop updating lock
@@ -196,7 +217,8 @@ async function cloneUser({ username, lastSynced }) {
 			// free lock and submit total amount of repositories
 			await lockClient.post(`/lock/${username}/complete`, null, {
 				params: {
-					totalRepos
+					totalRepos,
+					storageDelta
 				}
 			});
 		} catch(error) {

@@ -57,7 +57,6 @@ router.get('/userlist/:page', async ctx => {
 	const total = Number(await redis.zcard('tracked'));
 
 	const perPage = 6;
-	const totalPages = Math.ceil(total / perPage);
 	const page = Number(ctx.params.page);
 
 	const filter = typeof ctx.query.filter === 'string' ? ctx.query.filter : '';
@@ -79,6 +78,10 @@ router.get('/userlist/:page', async ctx => {
 	const filteredUsers = filter.trim().length > 0
 		? await getSearchResults()
 		: await getPage();
+
+	const totalPages = filter.trim().length > 0
+		? 1
+		: Math.ceil(total / perPage);
 
 	const users = await Promise.all(filteredUsers.map(async username => ({
 		username,
@@ -168,12 +171,13 @@ router.post('/lock/:username/complete', async ctx => {
 		.del(`user:${ctx.params.username}:error`)
 		.exec();
 
-	const {totalRepos} = ctx.query;
+	const {totalRepos, storageDelta} = ctx.query;
 	const oldTotal = await redis.getset(`user:${ctx.params.username}`, totalRepos) || 0;
 
 	await redis.multi()
 		.decrby('stats:repos', Number(oldTotal))
 		.incrby('stats:repos', Number(totalRepos))
+		.incrby('stats:storage', Number(storageDelta))
 		.exec();
 
 	ctx.set('Content-Type', 'application/json');
