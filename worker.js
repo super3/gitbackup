@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const axios = require('axios');
-const git = require('nodegit');
 const execa = require('execa');
 
 const client_id = process.env.CLIENT_ID;
