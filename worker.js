@@ -187,8 +187,11 @@ async function cloneUser({ username, lastSynced }) {
 	await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 60000)));
 
 	const lockClient = axios.create({
-		baseURL: 'http://localhost:8000',
-		timeout: 1000
+		baseURL: process.env.SERVER_URL || 'http://localhost:8000',
+		timeout: 1000,
+		headers: {
+			'X-Worker-Token': process.env.WORKER_TOKEN
+		}
 	});
 
 	for(; ;) {

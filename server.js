@@ -135,6 +135,16 @@ router.get('/stats', async ctx => {
 	};
 });
 
+router.use('/lock', async (ctx, next) => {
+	const token = ctx.request.headers['x-worker-token'];
+
+	if(await redis.hexists('worker-token', token) !== 1) {
+		throw new Error(`Bad worker token: '${token}'`);
+	}
+
+	await next();
+});
+
 router.post('/lock', async ctx => {
 	let username;
 
