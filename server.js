@@ -51,6 +51,15 @@ router.get('/user/:user/repos', async ctx => {
 	ctx.body = repos;
 });
 
+router.get('/repos/:user/:repo', async ctx => {
+	ctx.set('Content-Type', 'application/zip');
+
+	const path = `sj://github.com/${ctx.params.user}/${ctx.params.repo}`;
+	console.log(path);
+
+	ctx.body = uplink.cat(path);
+});
+
 router.get('/userlist/:page', async ctx => {
 	const total = Number(await redis.zcard('tracked'));
 
@@ -207,12 +216,6 @@ router.post('/lock/:username/error', async ctx => {
 	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(true);
 });
-
-router.get('/repos/*/(.*)', async ctx => koaSend(ctx, ctx.path.slice(6), {
-	root: `/storj/github.com`,
-	maxAge: 0
-}));
-
 
 app
 	.use(router.routes())
