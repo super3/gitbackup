@@ -1,4 +1,3 @@
-const fs = require('fs').promises;
 const Koa = require('koa');
 const Router = require('koa-router');
 const axios = require('axios');
@@ -8,6 +7,7 @@ const humanNumber = require('human-number');
 const df = require('@sindresorhus/df');
 const redis = require('./redis');
 const search = require('./search');
+const uplink = require('./lib/uplink');
 
 const app = module.exports = new Koa();
 const router = new Router();
@@ -43,12 +43,10 @@ router.get('/adduser/:user', async ctx => {
 });
 
 router.get('/user/:user/repos', async ctx => {
-	const path = `${__dirname}/repos/${ctx.params.user}`;
-
-	const files = await fs.readdir(`/storj/github.com/${ctx.params.user}`);
+	const files = await uplink.ls(`sj://github.com/${ctx.params.user}`);
 
 	// remove .zip
-	const repos = files.map(file => file.split('.').slice(0, -1).join('.'));
+	const repos = files.map(file => file.path.split('.').slice(0, -1).join('.'));
 
 	ctx.body = repos;
 });
