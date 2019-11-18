@@ -217,6 +217,6 @@ app
 	//.use(router.allowedMethods())
 	.use(require('koa-static')(`${__dirname}/www`));
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
 	console.log('Server running on port ' + PORT + '...');
 });

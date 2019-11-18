@@ -119,7 +119,7 @@ ZRANGEBYSCORE tracked "-inf" "+inf" LIMIT 0 1
 SET "lock:github.com/octocat" 1 EX 10 NX
 ```
 
-## Starting Server
+## Setting Up Server
 
 ```
 node server
