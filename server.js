@@ -10,7 +10,7 @@ const uplink = require('./lib/uplink');
 
 const app = module.exports = new Koa();
 const router = new Router();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 async function githubUserExists(partialUser) {
 	if(partialUser.trim() === '') {
