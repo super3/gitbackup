@@ -162,7 +162,7 @@ async function cloneUser({ username, lastSynced }) {
 		}
 
 		// add new zip to total storage usage
-		const {size} = await fs.stat(storjZip);
+		const {size} = await fs.stat(repoZip);
 		storageDelta += size;
 
 		console.log(repo.full_name, 'cleaning up');
