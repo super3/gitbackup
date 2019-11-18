@@ -1,7 +1,6 @@
 const Koa = require('koa');
 const Router = require('koa-router');
 const axios = require('axios');
-const koaSend = require('koa-send');
 const prettyBytes = require('pretty-bytes');
 const humanNumber = require('human-number');
 const df = require('@sindresorhus/df');
@@ -44,8 +43,6 @@ router.get('/adduser/:user', async ctx => {
 
 router.get('/user/:user/repos', async ctx => {
 	const files = await uplink.ls(`sj://github.com/${ctx.params.user}`);
-
-	// remove .zip
 	const repos = files.map(file => file.path.split('.').slice(0, -1).join('.'));
 
 	ctx.body = repos;
@@ -67,7 +64,6 @@ router.get('/userlist/:page', async ctx => {
 	const page = Number(ctx.params.page);
 
 	const filter = typeof ctx.query.filter === 'string' ? ctx.query.filter : '';
-
 	const exists = typeof await redis.zscore('tracked', filter) === 'string';
 
 	const getSearchResults = async () => {
@@ -117,7 +113,6 @@ router.get('/userlist/:page', async ctx => {
 
 router.get('/actorlogins', async ctx => {
 	const users = await await redis.zrange('tracked', 0, -1);
-
 	users.sort();
 
 	ctx.body = users.map(actor_login => JSON.stringify({actor_login})).join('\n');

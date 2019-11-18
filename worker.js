@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const axios = require('axios');
 const execa = require('execa');
+const storj = require('./lib/rclone');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -118,16 +119,15 @@ async function cloneUser({ username, lastSynced }) {
 
 		console.log(repo.full_name, 'mkdir storj parent directory');
 
-		await fs.mkdir(`/storj/github.com/${repo.full_name.split('/')[0]}`, {
-			recursive: true
-		});
-
-		const storjZip = `/storj/github.com/${repo.full_name}.zip`;
+		const storjZip = `github.com/${repo.full_name}.zip`;
 
 		try {
 			// remove old zip from total storage usage
-			const {size} = await fs.stat(storjZip);
-			storageDelta -= size;
+			const [ {size} ] = await storj.ls(storjZip);
+
+			if(typeof size === 'number') {
+				storageDelta -= size;
+			}
 		} catch(err) {
 
 		}
@@ -143,13 +143,13 @@ async function cloneUser({ username, lastSynced }) {
 
 				console.log(repo.full_name, 'copy zip to storj', retries, stat.size, timeout);
 
-				const subprocess = execa('cp', [repoZip, storjZip]);
+				const copy = storj.cp(repoZip, storjZip);
 
 				setTimeout(() => {
-					subprocess.cancel();
+					copy.cancel();
 				}, timeout);
 
-				await subprocess;
+				await copy;
 
 				break;
 			} catch(err) {
