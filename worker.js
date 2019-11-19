@@ -145,11 +145,11 @@ async function cloneUser({ username, lastSynced }) {
 		// Download zip:
 		console.log(repo.full_name, 'downloading zip');
 
-		const {data} = axios.get(`${repo.url}/archive/master.zip`, {
+		const {data} = axios.get(`${repo.html_url}/archive/master.zip`, {
 			responseType: 'stream',
 		});
 
-		data.pipe(fs.createReadStream(repoZipPath));
+		data.pipe(fs.createWriteStream(repoZipPath));
 
 		console.log(repo.full_name, 'mkdir storj parent directory');
 
