@@ -59,7 +59,9 @@ async function getRepos({ username }) {
 async function storjUpload(source, target) {
 	var err = null;
 
-	for (let retries = 3; retries > 0; retries--) {
+	let retries;
+
+	for(retries = 3; retries > 0; retries--) {
 		err = null;
 
 		try {
