@@ -145,7 +145,7 @@ async function cloneUser({ username, lastSynced }) {
 		// Download zip:
 		console.log(repo.full_name, 'downloading zip');
 
-		const {data} = axios.get(`${repo.html_url}/archive/master.zip`, {
+		const {data} = await axios.get(`${repo.html_url}/archive/master.zip`, {
 			responseType: 'stream',
 		});
 
