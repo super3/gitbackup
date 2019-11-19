@@ -168,8 +168,8 @@ async function cloneUser({ username, lastSynced }) {
 		await storjUpload(repoZipPath, storjZipPath)
 
 		// Update total storage usage delta:
-		storageDelta += fs.statSync(repoBundlePath).size;
-		storageDelta += fs.statSync(repoZipPath).size;
+		storageDelta += (await fs.stat(repoBundlePath)).size;
+		storageDelta += (await fs.stat(repoZipPath)).size;
 
 		console.log(repo.full_name, 'cleaning up');
 		await execa('rm', [ '-rf', repoBundlePath ]);
