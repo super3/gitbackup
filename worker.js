@@ -55,7 +55,7 @@ async function getRepos({ username }) {
 	return repos;
 }
 
-function storjUpload(source, target) {
+async function storjUpload(source, target) {
 	var err = nil;
 
 	for (let retries = 3; retries > 0; retries--) {
@@ -89,7 +89,7 @@ function storjUpload(source, target) {
 	}
 }
 
-function storjSize(path) {
+async function storjSize(path) {
 	try {
 		const [{size}] = await storj.ls(path);
 
@@ -161,8 +161,8 @@ async function cloneUser({ username, lastSynced }) {
 		storageDelta -= storjSize(storjZipPath);
 
 		// Try to upload the files:
-		storjUpload(repoBundlePath, storjBundlePath)
-		storjUpload(repoZipPath, storjZipPath)
+		await storjUpload(repoBundlePath, storjBundlePath)
+		await storjUpload(repoZipPath, storjZipPath)
 
 		// Update total storage usage delta:
 		storageDelta += fs.statSync(repoBundlePath).size;
