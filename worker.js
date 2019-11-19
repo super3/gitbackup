@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const {createWriteStream} = require('fs');
 const axios = require('axios');
 const execa = require('execa');
 const storj = require('./lib/rclone');
@@ -149,7 +150,7 @@ async function cloneUser({ username, lastSynced }) {
 			responseType: 'stream',
 		});
 
-		data.pipe(fs.createWriteStream(repoZipPath));
+		data.pipe(createWriteStream(repoZipPath));
 
 		console.log(repo.full_name, 'mkdir storj parent directory');
 
