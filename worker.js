@@ -214,6 +214,7 @@ async function cloneUser({ username, lastSynced }) {
 			} = await (async () => {
 				try {
 					return await cloneUser({ username, lastSynced })
+					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
 				} catch(error) {
 					console.log(`Caught sync failure of '${username}', cleaning up`);
 					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
