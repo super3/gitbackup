@@ -55,6 +55,54 @@ async function getRepos({ username }) {
 	return repos;
 }
 
+function storjUpload(source, target) {
+	var err = nil;
+
+	for (let retries = 3; retries > 0; retries--) {
+		err = nil;
+
+		try {
+			const stat = await fs.stat(source);
+			const rate = 1000.0 / (100 * 1024); // 100KiB per second
+			const minT = 60 * 1000; // Give at least 60 seconds to finish
+			const maxT = 4 * 60 * 60 * 1000; // No more than 4 hours
+
+			const timeout = Math.min(stat.size * rate + minT, maxT);
+
+			const copy = storj.cp(source, target);
+
+			setTimeout(() => {
+				copy.cancel();
+			}, timeout);
+
+			await copy;
+
+			break;
+		} catch(e) {
+			err = e;
+		}
+	}
+
+	if (err != nil || retries === 0) {
+		console.log(err);
+		throw new Error('Failed to copy to Storj');
+	}
+}
+
+function storjSize(path) {
+	try {
+		const [{size}] = await storj.ls(path);
+
+		if(typeof size === 'number') {
+			return size;
+		}
+	} catch(err) {
+
+	}
+
+	return 0;
+}
+
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
 	const repos = await getRepos({ username });
@@ -73,100 +121,56 @@ async function cloneUser({ username, lastSynced }) {
 		}
 
 		const repoPath = `${__dirname}/repos/${repo.full_name}`;
+		const repoBundlePath = `${repoPath}.bundle`;
+		const repoZipPath = `${repoPath}.zip`;
 
-		try {
-			await fs.stat(repoPath);
-			await execa('rm', [ '-rf', repoPath ]);
-		} catch(err) {
+		// Purge any existing data if it exists.
+		await execa('rm', ['-rf', repoZipPath]);
+		await execa('rm', ['-rf', repoBundlePath]);
+		await execa('rm', ['-rf', repoPath]);
 
-		}
-
+		// Create bundle:
 		console.log(repo.full_name, 'cloning');
 
 		try {
-			await execa('git', [ 'clone', '-q', repo.git_url, repoPath]);
+			await execa('git', ['clone', '--mirror', repo.git_url, repoPath]);
+			await execa('git', ['bundle', 'create', repoBundlePath, '--all'], {
+				cwd: repoPath,
+			});
 		} catch(err) {
 			console.log(repo.full_name, 'clone failed');
+			continue;
 		}
 
-		const repoZip = `${repoPath}.zip`;
+		// Download zip:
+		console.log(repo.full_name, 'downloading zip');
 
-		// delete if zip already exists
-		try {
-			await fs.stat(repoZip);
-			await fs.unlink(repoZip)
-		} catch(err) {
+		const {data} = axios.get(`${repo.url}/archive/master.zip`, {
+			responseType: 'stream',
+		});
 
-		}
-
-		// only create zip if repo not empty
-		let cloned = false;
-
-		try {
-			await fs.stat(repoPath);
-			cloned = true;
-		} catch(err) {
-
-		}
-
-		// make zip
-		if(cloned === true) {
-			console.log(repo.full_name, 'zipping');
-			await execa('zip', [ '-r', repoZip, './' ], {
-				cwd: repoPath
-			});
-		}
+		data.pipe(fs.createReadStream(repoZipPath));
 
 		console.log(repo.full_name, 'mkdir storj parent directory');
 
-		const storjZip = `github.com/${repo.full_name}.zip`;
+		const storjBundlePath = `github.com/${repo.full_name}.bundle`;
+		const storjZipPath = `github.com/${repo.full_name}.zip`;
 
-		try {
-			// remove old zip from total storage usage
-			const [ {size} ] = await storj.ls(storjZip);
+		// Remove old sizes from total storage delta:
+		storageDelta -= storjSize(storjBundlePath);
+		storageDelta -= storjSize(storjZipPath);
 
-			if(typeof size === 'number') {
-				storageDelta -= size;
-			}
-		} catch(err) {
+		// Try to upload the files:
+		storjUpload(repoBundlePath, storjBundlePath)
+		storjUpload(repoZipPath, storjZipPath)
 
-		}
-
-		for (let retries = 3; retries > 0; retries--) {
-			try {
-				const stat = await fs.stat(repoZip);
-				const rate = 1000.0 / (100 * 1024); // 100KiB per second
-				const minT = 60 * 1000; // Give at least 60 seconds to finish
-				const maxT = 4 * 60 * 60 * 1000; // No more than 4 hours
-
-				const timeout = Math.min(stat.size * rate + minT, maxT);
-
-				console.log(repo.full_name, 'copy zip to storj', retries, stat.size, timeout);
-
-				const copy = storj.cp(repoZip, storjZip);
-
-				setTimeout(() => {
-					copy.cancel();
-				}, timeout);
-
-				await copy;
-
-				break;
-			} catch(err) {
-				console.log(repo.full_name, 'failed, retrying...', err);
-
-				if(retries === 1) {
-					throw new Error('Failed to copy to Storj');
-				}
-			}
-		}
-
-		// add new zip to total storage usage
-		const {size} = await fs.stat(repoZip);
-		storageDelta += size;
+		// Update total storage usage delta:
+		storageDelta += fs.statSync(repoBundlePath).size;
+		storageDelta += fs.statSync(repoZipPath).size;
 
 		console.log(repo.full_name, 'cleaning up');
-		await execa('rm', [ '-rf', repoZip ]);
+		await execa('rm', [ '-rf', repoBundlePath ]);
+		await execa('rm', [ '-rf', repoZipPath ]);
 		await execa('rm', [ '-rf', repoPath ]);
 
 		console.log(repo.full_name, 'done');
@@ -177,7 +181,7 @@ async function cloneUser({ username, lastSynced }) {
 
 	return {
 		totalRepos: repos.length,
-		storageDelta
+		storageDelta,
 	};
 }
 
