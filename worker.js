@@ -57,10 +57,10 @@ async function getRepos({ username }) {
 }
 
 async function storjUpload(source, target) {
-	var err = nil;
+	var err = null;
 
 	for (let retries = 3; retries > 0; retries--) {
-		err = nil;
+		err = null;
 
 		try {
 			const stat = await fs.stat(source);
@@ -84,7 +84,7 @@ async function storjUpload(source, target) {
 		}
 	}
 
-	if (err != nil || retries === 0) {
+	if (err != null || retries === 0) {
 		console.log(err);
 		throw new Error('Failed to copy to Storj');
 	}
