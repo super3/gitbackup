@@ -141,7 +141,7 @@ router.use('/lock', async (ctx, next) => {
 	const token = ctx.request.headers['x-worker-token'];
 
 	if(await redis.hexists('worker-token', token) !== 1) {
-		throw new Error(`Bad worker token: '${token}'`);
+		ctx.throw(400, 'Bad Worker Token');
 	}
 
 	await next();

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mkdir -p user_dumps; jest --forceExit",
+    "test": "node scripts/worker-token generate 'test token' && mkdir -p user_dumps; rm -rf repos/*; jest --forceExit",
     "coverage": "jest --forceExit --coverage"
   },
   "repository": {
@@ -44,5 +44,8 @@
     "jest": "^24.9.0",
     "supertest": "^4.0.2",
     "xo": "^0.25.3"
+  },
+  "jest": {
+    "testRegex": "./test/.*.js$"
   }
 }

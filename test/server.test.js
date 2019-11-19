@@ -1,4 +1,6 @@
+const assert = require('assert');
 const axios = require('axios');
+const redis = require('../redis');
 const app = require('../server');
 
 const client = axios.create({
@@ -14,26 +16,44 @@ test('/', async () => {
 	expect(response.status).toBe(200);
 });
 
-test('/isvaliduser', async () => {
+test('/isvaliduser bad user', async () => {
 	const response = await client.get('/isvaliduser/not_real_user_');
 
 	expect(response.data).toBe(false);
 });
 
-test('/isvaliduser', async () => {
+test('/isvaliduser real user #1', async () => {
 	const response = await client.get('/isvaliduser/super3');
 
 	expect(response.data).toBe(true);
 });
 
-test('/isvaliduser', async () => {
+test('/adduser bad user', async () => {
 	const response = await client.get('/isvaliduser/not_valid_user__');
 
-	expect(response.data).toBe(false);
+	expect(response.status).toBe(200);
 });
 
-test('/adduser', async () => {
+test('/adduser real user #1', async () => {
 	const response = await client.get('/adduser/super3');
+
+	expect(response.status).toBe(200);
+});
+
+test('/adduser real user #2', async () => {
+	const response = await client.get('/adduser/montyanderson');
+
+	expect(response.status).toBe(200);
+});
+
+test('/adduser real user #3', async () => {
+	const response = await client.get('/adduser/calebcase');
+
+	expect(response.status).toBe(200);
+});
+
+test('/adduser real user #4', async () => {
+	const response = await client.get('/adduser/stefanbenten');
 
 	expect(response.status).toBe(200);
 });
@@ -54,4 +74,31 @@ test('/stats', async () => {
 	const response = await client.get('/actorlogins');
 
 	expect(response.status).toBe(200);
+});
+
+test('/lock bad worker key', async () => {
+	// Bad worker key
+
+	assert.rejects(client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': 'bad token here'
+		}
+	}), {
+		name: 'Error',
+		message: 'Request failed with status code 400'
+	})
+});
+
+test('/lock good worker key', async () => {
+	// Bad worker key
+
+	const tokens = await redis.hgetall('worker-token');
+
+	for(const token in tokens) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+	}
 });
