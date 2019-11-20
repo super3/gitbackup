@@ -135,13 +135,6 @@ router.get('/actorlogins', async ctx => {
 	ctx.body = users.map(actor_login => JSON.stringify({actor_login})).join('\n');
 });
 
-router.get('/adduser/:user', async ctx => {
-	if(await githubUserExists(ctx.params.user) === true) {
-		await redis.zadd('tracked', 0, ctx.params.user);
-		await search.index(ctx.params.user);
-	}
-});
-
 router.get('/stats', async ctx => {
 	const {used} = await df.file(__dirname);
 
