@@ -59,10 +59,12 @@ const app = new Vue({
 
 	  for(const user of this.users) {
 		  if(this.search === user.username) {
+			  const timeout = this.search === urlParams.get('q') ? 0 : 1000;
+
 			  repoListTimeout = setTimeout(async () => {
 				  const {data} = await axios.get(`/user/${user.username}/repos`);
 				  this.repos[user.username] = data;
-			  }, 1000);
+			  }, timeout);
 		  }
 	  }
 	},
