@@ -60,6 +60,27 @@ test('/userlist', async () => {
 	expect(response.status).toBe(200);
 });
 
+test('/userlist', async () => {
+	const response = await client.get('/userlist/0');
+	expect(response.status).toBe(200);
+});
+
+test('/userlist search', async () => {
+	const response = await client.get('/userlist/0', {
+		params: {
+			filter: 'super'
+		}
+	});
+
+	expect(response.data.users).toStrictEqual([
+		{
+			"username": "super3",
+			"totalRepos": 0,
+			"status": "unsynced"
+		}
+	]);
+});
+
 test('/actorlogins', async () => {
 	const response = await client.get('/actorlogins');
 	expect(response.status).toBe(200);
