@@ -34,7 +34,7 @@ router.get('/adduser/:user', async ctx => {
 	const userExists = await githubUserExists(ctx.params.user);
 
 	if(userExists === true) {
-		 const added = await redis.zadd('tracked', -1, ctx.params.user) === 1;
+		 const added = await redis.zadd('tracked', 'NX', -1, ctx.params.user) === 1;
 		 await search.index(ctx.params.user);
 		 ctx.body = added ? 'added' : 'exists';
 	} else {
