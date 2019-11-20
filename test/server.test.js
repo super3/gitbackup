@@ -24,10 +24,12 @@ test('/isvaliduser bad user', async () => {
 	expect(response.data).toBe(false);
 });
 
+/*
 test('/isvaliduser blank username', async () => {
 	const response = await client.get('/isvaliduser/ ');
 	expect(response.data).toBe(false);
 });
+*/
 
 test('/isvaliduser real user #1', async () => {
 	const response = await client.get('/isvaliduser/super3');
@@ -96,6 +98,20 @@ test('/stats', async () => {
 	expect(response.status).toBe(200);
 });
 
+// locks
+
+async function removeAllLocks() {
+	for(const lock of await redis.keys('lock:*')) {
+		await redis.del(lock);
+	}
+}
+
+async function getWorkerToken() {
+	const [token] = Object.keys(await redis.hgetall('worker-token'));
+
+	return token;
+}
+
 test('/lock bad worker key', async () => {
 	const response = await client.post('/lock', null, {
 		headers: {
@@ -122,4 +138,102 @@ test('/lock good worker key', async () => {
 
 		return;
 	}
+});
+
+test('/lock throw error after all users locked', async () => {
+	const token = await getWorkerToken();
+	await removeAllLocks();
+
+	for(let i = 0; i < await redis.zcard('tracked'); i++) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+
+		expect(response.status).toBe(200);
+	}
+
+	const response = await client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	expect(response.status).toBe(500);
+});
+
+test('/lock/:username', async () => {
+	const token = await getWorkerToken();
+	await removeAllLocks();
+
+	const username = (await client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	})).data;
+
+	await new Promise(resolve => setTimeout(resolve, 2000));
+	const oldTTL = await redis.ttl(`lock:${username}`);
+
+	await client.post(`/lock/${username}`, null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	const newTTL = await redis.ttl(`lock:${username}`);
+
+	expect(oldTTL).toBeLessThan(newTTL);
+});
+
+test('/lock/:username/success', async () => {
+	const token = await getWorkerToken();
+	await removeAllLocks();
+
+	const lockedUsername = (await client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	})).data;
+
+	for(;;) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+
+		if(response.status === 500) {
+			break;
+		}
+
+		expect(response.data).not.toBe(lockedUsername);
+	}
+
+	await client.post(`/lock/${lockedUsername}/complete`, null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	let matches = 0;
+
+	for(;;) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+
+		if(response.status === 500) {
+			break;
+		}
+
+		if(response.data === lockedUsername) {
+			matches++;
+		}
+	}
+
+	expect(matches).toBe(1);
 });
