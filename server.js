@@ -13,7 +13,7 @@ const router = new Router();
 const PORT = process.env.PORT || 8000;
 
 async function githubUserExists(partialUser) {
-	/* istanbul ignore */
+	/* istanbul ignore next */
 	if(partialUser.trim() === '') {
 		return false;
 	}
