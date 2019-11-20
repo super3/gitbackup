@@ -220,8 +220,7 @@ async function cloneUser({ username, lastSynced }) {
 				storageDelta
 			} = await (async () => {
 				try {
-					await cloneUser({ username, lastSynced })
-					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
+					return await cloneUser({ username, lastSynced })
 				} catch(error) {
 					console.log(`Caught sync failure of '${username}', cleaning up`);
 					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
@@ -229,6 +228,8 @@ async function cloneUser({ username, lastSynced }) {
 					throw error;
 				}
 			})();
+
+			await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
 
 			// stop updating lock
 			clearInterval(updateLock);
