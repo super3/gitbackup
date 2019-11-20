@@ -237,3 +237,54 @@ test('/lock/:username/success', async () => {
 
 	expect(matches).toBe(1);
 });
+
+test('/lock/:username/error', async () => {
+	const token = await getWorkerToken();
+	await removeAllLocks();
+
+	const lockedUsername = (await client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	})).data;
+
+	for(;;) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+
+		if(response.status === 500) {
+			break;
+		}
+
+		expect(response.data).not.toBe(lockedUsername);
+	}
+
+	await client.post(`/lock/${lockedUsername}/error`, null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	let matches = 0;
+
+	for(;;) {
+		const response = await client.post('/lock', null, {
+			headers: {
+				'X-Worker-Token': token
+			}
+		});
+
+		if(response.status === 500) {
+			break;
+		}
+
+		if(response.data === lockedUsername) {
+			matches++;
+		}
+	}
+
+	expect(matches).toBe(1);
+});
