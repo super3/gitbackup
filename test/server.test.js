@@ -47,6 +47,11 @@ test('/adduser real user #1', async () => {
 	expect(response.status).toBe(200);
 });
 
+test('/adduser real user #1 (duplicate)', async () => {
+	const response = await client.get('/adduser/super3');
+	expect(response.status).toBe(200);
+});
+
 test('/adduser real user #2', async () => {
 	const response = await client.get('/adduser/montyanderson');
 	expect(response.status).toBe(200);
@@ -77,6 +82,22 @@ test('/userlist search', async () => {
 	const response = await client.get('/userlist/0', {
 		params: {
 			filter: 'super'
+		}
+	});
+
+	expect(response.data.users).toStrictEqual([
+		{
+			"username": "super3",
+			"totalRepos": 0,
+			"status": "unsynced"
+		}
+	]);
+});
+
+test('/userlist search with exact match', async () => {
+	const response = await client.get('/userlist/0', {
+		params: {
+			filter: 'super3'
 		}
 	});
 
