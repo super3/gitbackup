@@ -49,19 +49,23 @@ const app = new Vue({
 	  this.page = i;
 	  this.totalPages = totalPages;
 	  this.totalUsers = total;
+
+	  for(const user of this.users) {
+		  if(this.q === user.username) {
+			  if(typeof this.repos[user.username] !== 'undefined') {
+				  this.repos = {};
+				  return;
+			  }
+
+			  const {data} = await axios.get(`/user/${user.username}/repos`);
+
+			  this.repos = {};
+			  this.repos[user.username] = data;
+		  }
+	  }
 	},
 	async loadRepos(user) {
 		return location.replace(`${location.origin}/?q=${user.username}`);
-
-		if(typeof this.repos[user.username] !== 'undefined') {
-			this.repos = {};
-			return;
-		}
-
-		const {data} = await axios.get(`/user/${user.username}/repos`);
-
-		this.repos = {};
-		this.repos[user.username] = data;
 	},
 	async loadStats() {
 		const {data} = await axios.get('/stats');
