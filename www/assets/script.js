@@ -1,6 +1,8 @@
 const CancelToken = axios.CancelToken;
 const urlParams = new URLSearchParams(location.search);
 
+let repoListTimeout;
+
 const app = new Vue({
   el: '#app',
   data: {
@@ -50,17 +52,24 @@ const app = new Vue({
 	  this.totalPages = totalPages;
 	  this.totalUsers = total;
 
+	  if(typeof repoListTimeout !== 'undefined') {
+		  clearTimeout(repoListTimeout);
+		  repoListTimeout = null;
+	  }
+
 	  for(const user of this.users) {
 		  if(this.search === user.username) {
-			  if(typeof this.repos[user.username] !== 'undefined') {
+			  repoListTimeout = setTimeout(async () => {
+				  if(typeof this.repos[user.username] !== 'undefined') {
+					  this.repos = {};
+					  return;
+				  }
+
+				  const {data} = await axios.get(`/user/${user.username}/repos`);
+
 				  this.repos = {};
-				  return;
-			  }
-
-			  const {data} = await axios.get(`/user/${user.username}/repos`);
-
-			  this.repos = {};
-			  this.repos[user.username] = data;
+				  this.repos[user.username] = data;
+			  }, 1000);
 		  }
 	  }
 	},
