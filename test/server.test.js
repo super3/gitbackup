@@ -8,47 +8,44 @@ const client = axios.create({
 	timeout: 10000
 });
 
+client.defaults.validateStatus = function () {
+    return true;
+};
+
 jest.setTimeout(30 * 1000);
 
 test('/', async () => {
 	const response = await client.get('/');
-
 	expect(response.status).toBe(200);
 });
 
 test('/isvaliduser bad user', async () => {
-	const response = await client.get('/isvaliduser/not_real_user_');
-
+	const response = await client.get('/isvaliduser/not_real_user___');
 	expect(response.data).toBe(false);
 });
 
 test('/isvaliduser real user #1', async () => {
 	const response = await client.get('/isvaliduser/super3');
-
 	expect(response.data).toBe(true);
 });
 
 test('/adduser bad user', async () => {
-	const response = await client.get('/isvaliduser/not_valid_user__');
-
-	expect(response.status).toBe(200);
+	const response = await client.get('/adduser/not_valid_user__');
+	expect(response.status).toBe(500);
 });
 
 test('/adduser real user #1', async () => {
 	const response = await client.get('/adduser/super3');
-
 	expect(response.status).toBe(200);
 });
 
 test('/adduser real user #2', async () => {
 	const response = await client.get('/adduser/montyanderson');
-
 	expect(response.status).toBe(200);
 });
 
 test('/adduser real user #3', async () => {
 	const response = await client.get('/adduser/calebcase');
-
 	expect(response.status).toBe(200);
 });
 
@@ -60,33 +57,27 @@ test('/adduser real user #4', async () => {
 
 test('/userlist', async () => {
 	const response = await client.get('/userlist/0');
-
 	expect(response.status).toBe(200);
 });
 
 test('/actorlogins', async () => {
 	const response = await client.get('/actorlogins');
-
 	expect(response.status).toBe(200);
 });
 
 test('/stats', async () => {
 	const response = await client.get('/actorlogins');
-
 	expect(response.status).toBe(200);
 });
 
 test('/lock bad worker key', async () => {
-	// Bad worker key
-
-	assert.rejects(client.post('/lock', null, {
+	const response = await client.post('/lock', null, {
 		headers: {
 			'X-Worker-Token': 'bad token here'
 		}
-	}), {
-		name: 'Error',
-		message: 'Request failed with status code 400'
-	})
+	});
+
+	expect(response.status).toBe(400);
 });
 
 test('/lock good worker key', async () => {
@@ -100,5 +91,9 @@ test('/lock good worker key', async () => {
 				'X-Worker-Token': token
 			}
 		});
+
+		expect(response.status).toBe(200);
+
+		return;
 	}
 });
