@@ -116,7 +116,7 @@ test('/actorlogins', async () => {
 });
 
 test('/stats', async () => {
-	const response = await client.get('/actorlogins');
+	const response = await client.get('/stats');
 	expect(response.status).toBe(200);
 });
 
