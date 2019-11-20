@@ -51,6 +51,8 @@ const app = new Vue({
 	  this.totalUsers = total;
 	},
 	async loadRepos(user) {
+		return location.replace(`${location.origin}/?q=${user}`);
+
 		if(typeof this.repos[user.username] !== 'undefined') {
 			this.repos = {};
 			return;
