@@ -55,15 +55,6 @@ router.get('/repos/:user/:repo', async ctx => {
 	const path = `sj://github.com/${ctx.params.user}/${ctx.params.repo}`;
 	console.log(path);
 
-	ctx.body = uplink.cat(path);
-});
-
-router.get('/repos/:user/:repo', async ctx => {
-	ctx.set('Content-Type', 'application/zip');
-
-	const path = `sj://github.com/${ctx.params.user}/${ctx.params.repo}`;
-	console.log(path);
-
 	if(path.endsWith('.zip') === true) {
 		ctx.set('Content-Type', 'application/zip');
 	}
