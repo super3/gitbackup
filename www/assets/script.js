@@ -51,7 +51,7 @@ const app = new Vue({
 	  this.totalUsers = total;
 
 	  for(const user of this.users) {
-		  if(this.q === user.username) {
+		  if(this.search === user.username) {
 			  if(typeof this.repos[user.username] !== 'undefined') {
 				  this.repos = {};
 				  return;
