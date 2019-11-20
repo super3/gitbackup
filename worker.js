@@ -160,8 +160,8 @@ async function cloneUser({ username, lastSynced }) {
 		const storjZipPath = `github.com/${repo.full_name}.zip`;
 
 		// Remove old sizes from total storage delta:
-		storageDelta -= storjSize(storjBundlePath);
-		storageDelta -= storjSize(storjZipPath);
+		storageDelta -= await storjSize(storjBundlePath);
+		storageDelta -= await storjSize(storjZipPath);
 
 		// Try to upload the files:
 		await storjUpload(repoBundlePath, storjBundlePath);
