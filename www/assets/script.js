@@ -61,13 +61,6 @@ const app = new Vue({
 		  if(this.search === user.username) {
 			  repoListTimeout = setTimeout(async () => {
 				  const {data} = await axios.get(`/user/${user.username}/repos`);
-
-				  if(typeof this.repos[user.username] !== 'undefined') {
-					  this.repos = {};
-					  return;
-				  }
-
-				  this.repos = {};
 				  this.repos[user.username] = data;
 			  }, 1000);
 		  }

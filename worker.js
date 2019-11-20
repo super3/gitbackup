@@ -164,8 +164,8 @@ async function cloneUser({ username, lastSynced }) {
 		storageDelta -= storjSize(storjZipPath);
 
 		// Try to upload the files:
-		await storjUpload(repoBundlePath, storjBundlePath)
-		await storjUpload(repoZipPath, storjZipPath)
+		await storjUpload(repoBundlePath, storjBundlePath);
+		await storjUpload(repoZipPath, storjZipPath);
 
 		// Update total storage usage delta:
 		storageDelta += (await fs.stat(repoBundlePath)).size;
