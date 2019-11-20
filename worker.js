@@ -220,7 +220,7 @@ async function cloneUser({ username, lastSynced }) {
 				storageDelta
 			} = await (async () => {
 				try {
-					return await cloneUser({ username, lastSynced })
+					await cloneUser({ username, lastSynced })
 					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
 				} catch(error) {
 					console.log(`Caught sync failure of '${username}', cleaning up`);
