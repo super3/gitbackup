@@ -311,6 +311,31 @@ test('/lock/:username/error', async () => {
 	expect(matches).toBe(1);
 });
 
+test('/lock/:username/last_synced', async () => {
+	const token = await getWorkerToken();
+	await removeAllLocks();
+
+	const lockedUsername = (await client.post('/lock', null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	})).data;
+
+	await client.post(`/lock/${lockedUsername}/error`, null, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	const response = await client.get(`/lock/${lockedUsername}/last_synced`, {
+		headers: {
+			'X-Worker-Token': token
+		}
+	});
+
+	expect(response.data).toBeGreaterThan(1);
+});
+
 test('/user/:user/repos', async () => {
 	uplink.ls = () => ([
 		{ path: 'file-a.zip' },
