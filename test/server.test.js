@@ -1,6 +1,7 @@
 const assert = require('assert');
 const axios = require('axios');
 const redis = require('../redis');
+const uplink = require('../lib/uplink');
 const app = require('../server');
 
 const client = axios.create({
@@ -287,4 +288,48 @@ test('/lock/:username/error', async () => {
 	}
 
 	expect(matches).toBe(1);
+});
+
+test('/user/:user/repos', async () => {
+	uplink.ls = () => ([
+		{ path: 'file-a.zip' },
+		{ path: 'file-b.zip' },
+		{ path: 'file-c.zip' },
+		{ path: 'file-c.bundle' }
+	]);
+
+	const response = await client.get('/user/fake_user/repos');
+
+	expect(response.data).toStrictEqual([
+		'file-a',
+		'file-b',
+		'file-c'
+	]);
+});
+
+test('/user/:user/repos', async () => {
+	uplink.ls = () => ([
+		{ path: 'file-a.zip' },
+		{ path: 'file-b.zip' },
+		{ path: 'file-c.zip' },
+		{ path: 'file-c.bundle' }
+	]);
+
+	const response = await client.get('/user/fake_user/repos');
+
+	expect(response.data).toStrictEqual([
+		'file-a',
+		'file-b',
+		'file-c'
+	]);
+});
+
+test('/repos/:user/:repo', async () => {
+	const testValue = 'hello!';
+
+	uplink.cat = () => testValue;
+
+	const response = await client.get('/repos/fake_user/fake_repo');
+
+	expect(response.data).toBe(testValue);
 });
