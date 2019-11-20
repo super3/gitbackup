@@ -24,6 +24,11 @@ test('/isvaliduser bad user', async () => {
 	expect(response.data).toBe(false);
 });
 
+test('/isvaliduser blank username', async () => {
+	const response = await client.get('/isvaliduser/ ');
+	expect(response.data).toBe(false);
+});
+
 test('/isvaliduser real user #1', async () => {
 	const response = await client.get('/isvaliduser/super3');
 	expect(response.data).toBe(true);
