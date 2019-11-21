@@ -42,7 +42,7 @@
       <p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
     </div>
 
-    <div class="form-label-group">
+    <div class="form-label-group" v-if="!repoList">
       <input v-model="search" v-on:keydown="loadPage(0); checkUser();"  class="form-control search" required="" autofocus="" autocomplete="off" type="text" onsubmit="return false">
 
       <label for="inputEmail">Type in a GitHub username or organization...</label>
