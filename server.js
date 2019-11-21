@@ -130,7 +130,7 @@ router.get('/actorlogins', async ctx => {
 router.get('/stats', async ctx => {
 	const {used} = await df.file(__dirname);
 
-	const sumHash = async key => Object.values(await redis.hgetall(key)).reduce((a, b) => a + b, 0, 0);
+	const sumHash = async key => [ 0, ...Object.values(await redis.hgetall(key)) ].reduce((a, b) => a + b);
 
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
