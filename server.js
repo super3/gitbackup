@@ -132,6 +132,9 @@ router.get('/stats', async ctx => {
 
 	const activeWorkers = await redis.zrangebyscore('active-workers', Date.now() - 3600000, '+inf');
 
+	const getSpeedStat = async stat => (await Promise.all(
+		activeWorkers.map(async worker => Number(await redis.get(`speed-stats:${stat}:${worker}`) || 0))
+	)).reduce((a, b) => a + b, 0);
 
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
@@ -139,15 +142,9 @@ router.get('/stats', async ctx => {
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
 		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
-		usersPerMinute: (await Promise.all(
-			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:users-per-minute:${worker}`) || 0))
-		)).reduce((a, b) => a + b, 0),
-		reposPerMinute: (await Promise.all(
-			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:repos-per-minute:${worker}`) || 0))
-		)).reduce((a, b) => a + b, 0),
-		bytesPerMinute: (await Promise.all(
-			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:bytes-per-minute:${worker}`) || 0))
-		)).reduce((a, b) => a + b, 0)
+		usersPerMinute: (await getSpeedStat('users-per-minute')).toFixed(2),
+		reposPerMinute: (await getSpeedStat('repo-per-minute')).toFixed(2),
+		bytesPerMinute: prettyBytes(await getSpeedStat('bytes-per-minute'))
 	};
 });
 
