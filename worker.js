@@ -252,7 +252,7 @@ async function cloneUser({ username, lastSynced }) {
 				}
 			});
 
-			const userTime = startTime - Date.now();
+			const userTime = Date.now() - startTime;
 
 			const worker_id = `${os.hostname()}-${process.env.pm_id}`;
 
