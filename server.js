@@ -231,7 +231,7 @@ router.post('/lock/push_stats', async ctx => {
 	await redis.hset(`speed-stats:repos_per_minute`, worker_id, repos_per_minute);
 	await redis.hset(`speed-stats:bytes_per_minute`, worker_id, bytes_per_minute);
 
-	ctx.body = "";
+	ctx.body = "true";
 });
 
 app
