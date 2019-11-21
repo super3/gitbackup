@@ -6,6 +6,7 @@ let repoListTimeout;
 const app = new Vue({
   el: '#app',
   data: {
+	q: urlParams.get('q'),
 	search: urlParams.get('q') || '',
 	isValidUser: false,
 	users: [],
@@ -60,7 +61,7 @@ const app = new Vue({
 	  }
 
 	  for(const user of this.users) {
-		  if(this.search === user.username && this.repoList === false) {
+		  if(this.search === user.username && this.repoList === false && this.q === this.search) {
 			  const timeout = this.search === urlParams.get('q') ? 0 : 1000;
 
 			  repoListTimeout = setTimeout(async () => {
