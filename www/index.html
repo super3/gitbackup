@@ -53,11 +53,7 @@
 			<div class="card-header justify-content-between align-items-center">
 				<span><i class="fas fa-user"></i> {{repoList.user.username | truncateUsername}}</span>
 
-				<div class="btn-group" role="group" aria-label="Basic example">
-					<button type="button" class="btn btn-sm btn-outline-dark">
-						<i class="fas fa-code-branch"></i> View {{repoList.user.totalRepos}} Repos
-					</button>
-
+				<div class="btn-group float-right" role="group" aria-label="Basic example">
 					<button type="button" class="btn btn-sm" v-bind:class="{
 						'btn-outline-success': repoList.user.status === 'synced',
 						'btn-outline-warning': repoList.user.status === 'syncing',
@@ -71,9 +67,30 @@
 
 			<ul class="list-group list-group-flush">
 				<li class="list-group-item" v-for="repo in repoList.repos">
-					{{repo}} <a v-bind:href="`repos/${repoList.user.username}/${repo}.zip`">
-						<i class="fas fa-download"></i>
-					</a>
+					{{repo}}
+
+					<div class="float-right">
+						<div>
+							<a v-bind:href="`repos/${repoList.user.username}/${repo}.zip`">
+								<button class="btn btn-sm btn-outline-dark"><i class="fas fa-download"></i> Download ZIP</button>
+							</a>
+
+							<a>
+								<button class="btn btn-sm btn-outline-dark" v-on:click="cloneRepo = cloneRepo === repo ? false : repo"><i class="fas fa-download"></i> Clone Repo</button>
+							</a>
+						</div>
+					</div>
+
+					<div v-if="cloneRepo === repo" style="margin-bottom: 1rem">
+						<hr>
+
+						<label for="linuxCommand">Linux / Mac</label>
+
+						<input id="linuxCommand" class="form-control"  v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle && git clone ${repo}.bundle `">
+
+						<label for="windowsCommand">Windows</label>
+						<input id="windowsCommand" class="form-control" v-if="cloneRepo === repo" v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle -o Space-Invaders-C.bundle; git clone Space-Invaders-C.bundle`">
+					</div>
 				</li>
 			</ul>
 		</div>

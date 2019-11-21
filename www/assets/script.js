@@ -15,7 +15,8 @@ const app = new Vue({
 	totalUsers: 0,
 	cancelPreviousCheckUser: null,
 	stats: null,
-	exists: false
+	exists: false,
+	cloneRepo: false
   },
   methods: {
 	async checkUser() {
