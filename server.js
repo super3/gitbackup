@@ -7,6 +7,7 @@ const df = require('@sindresorhus/df');
 const redis = require('./redis');
 const search = require('./search');
 const uplink = require('./lib/uplink');
+const rclone = require('./lib/rclone');
 
 const app = module.exports = new Koa();
 const router = new Router();
