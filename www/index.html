@@ -84,11 +84,11 @@
 					<div v-if="cloneRepo === repo" style="margin-bottom: 1rem">
 						<hr>
 
-						<label for="linuxCommand">Linux / Mac</label>
+						<label for="linuxCommand"><i class="fab fa-linux"></i> Linux / <i class="fab fa-apple"></i> Mac</label>
 
 						<input id="linuxCommand" class="form-control"  v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle && git clone ${repo}.bundle `">
 
-						<label for="windowsCommand">Windows</label>
+						<label for="windowsCommand" style="margin-top: 0.5rem;"><i class="fab fa-windows"></i> Windows</label>
 						<input id="windowsCommand" class="form-control" v-if="cloneRepo === repo" v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle -o ${repo}.bundle; git clone ${repo}.bundle`">
 					</div>
 				</li>
