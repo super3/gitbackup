@@ -42,7 +42,7 @@
       <p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
     </div>
 
-    <div class="form-label-group" v-if="!repoList">
+    <div class="form-label-group" v-if="!repoList && repoListLoading === false">
       <input v-model="search" v-on:keydown="loadPage(0); checkUser();"  class="form-control search" required="" autofocus="" autocomplete="off" type="text" onsubmit="return false">
 
       <label for="inputEmail">Type in a GitHub username or organization...</label>
@@ -96,7 +96,12 @@
 		</div>
 	</div>
 
-    <ul class="list-group" v-else>
+	<div v-if="repoListLoading === true" style="text-align: center; padding: 2rem;">
+		<p>Fetching {{search}}'s repos...</p>
+		<div class="spinner-border" ></div>
+	</div>
+
+    <ul class="list-group" v-if="!repoList && repoListLoading === false">
       <li v-if="search && exists !== true" class="list-group-item d-flex justify-content-between align-items-center">
         <span><i class="fas fa-user"></i> {{search}}</span>
         <button type="button" class="btn btn-sm btn-success" v-bind:disabled="!isValidUser" v-on:click="addUser">
@@ -125,7 +130,7 @@
       </li>
     </ul>
 
-    <nav aria-label="Page navigation example" v-if="!repoList">
+    <nav aria-label="Page navigation example" v-if="!repoList && repoListLoading === false">
       <ul class="pagination justify-content-center">
         <li class="page-item" v-bind:class="{ disabled: page === 0}">
           <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>

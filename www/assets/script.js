@@ -10,6 +10,7 @@ const app = new Vue({
 	isValidUser: false,
 	users: [],
 	repoList: false,
+	repoListLoading: false,
 	page: 0,
 	totalPages: 0,
 	totalUsers: 0,
@@ -63,7 +64,10 @@ const app = new Vue({
 			  const timeout = this.search === urlParams.get('q') ? 0 : 1000;
 
 			  repoListTimeout = setTimeout(async () => {
+				  this.repoListLoading = true;
 				  const {data} = await axios.get(`/user/${user.username}/repos`);
+
+				  this.repoListLoading = false;
 
 				  this.repoList = {
 					  user,
