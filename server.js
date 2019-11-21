@@ -138,9 +138,9 @@ router.get('/stats', async ctx => {
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
 		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
-		usersPerMinute: await sumHash('speed-stats:users_per_minute'),
-		reposPerMinute: await sumHash('speed-stats:repos_per_minute'),
-		bytesPerMinute: await sumHash('speed-stats:bytes_per_minute')
+		usersPerMinute: (await sumHash('speed-stats:users_per_minute')).toFixed(2),
+		reposPerMinute: (await sumHash('speed-stats:repos_per_minute')).toFixed(2),
+		bytesPerMinute: (await sumHash('speed-stats:bytes_per_minute')).toFixed(2)
 	};
 });
 
