@@ -60,7 +60,7 @@ const app = new Vue({
 	  }
 
 	  for(const user of this.users) {
-		  if(this.search === user.username) {
+		  if(this.search === user.username && this.repoList === false) {
 			  const timeout = this.search === urlParams.get('q') ? 0 : 1000;
 
 			  repoListTimeout = setTimeout(async () => {
