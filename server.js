@@ -130,12 +130,17 @@ router.get('/actorlogins', async ctx => {
 router.get('/stats', async ctx => {
 	const {used} = await df.file(__dirname);
 
+	const sumHash = async key => Object.values(await redis.hgetall(key)).reduce((a, b) => a + b);
+
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
-		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length
+		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
+		usersPerMinute: await sumHash('speed-stats:users_per_minute'),
+		reposPerMinute: await sumHash('speed-stats:repos_per_minute'),
+		bytesPerMinute: await sumHash('speed-stats:bytes_per_minute')
 	};
 });
 
@@ -212,6 +217,21 @@ router.post('/lock/:username/error', async ctx => {
 
 	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(true);
+});
+
+router.post('/lock/push_stats', async ctx => {
+	const {
+		worker_id,
+		users_per_minute,
+		repos_per_minute,
+		bytes_per_minute
+	} = ctx.query;
+
+	await redis.hset(`speed-stats:users_per_minute`, worker_id, users_per_minute);
+	await redis.hset(`speed-stats:repos_per_minute`, worker_id, repos_per_minute);
+	await redis.hset(`speed-stats:bytes_per_minute`, worker_id, bytes_per_minute);
+
+	ctx.body = "";
 });
 
 app

@@ -1,3 +1,4 @@
+const os = require('os');
 const fs = require('fs').promises;
 const {createWriteStream} = require('fs');
 const axios = require('axios');
@@ -110,6 +111,7 @@ async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
 	const repos = await getRepos({ username });
 	let storageDelta = 0;
+	let totalUpload = 0;
 
 	console.log(username, 'has', repos.length, 'repositories');
 
@@ -171,6 +173,10 @@ async function cloneUser({ username, lastSynced }) {
 		storageDelta += (await fs.stat(repoBundlePath)).size;
 		storageDelta += (await fs.stat(repoZipPath)).size;
 
+		// Update total upload
+		totalUpload += (await fs.stat(repoBundlePath)).size;
+		totalUpload += (await fs.stat(repoZipPath)).size;
+
 		console.log(repo.full_name, 'cleaning up');
 		await execa('rm', [ '-rf', repoBundlePath ]);
 		await execa('rm', [ '-rf', repoZipPath ]);
@@ -185,6 +191,7 @@ async function cloneUser({ username, lastSynced }) {
 	return {
 		totalRepos: repos.length,
 		storageDelta,
+		totalUpload
 	};
 }
 
@@ -205,6 +212,8 @@ async function cloneUser({ username, lastSynced }) {
 		const username = (await lockClient.post('/lock')).data;
 
 		try {
+			const startTime = Date.now();
+
 			// make loop in background to re-instantiate lock every 5 seconds
 			const updateLock = setInterval(async () => {
 				await lockClient.post(`/lock/${username}`);
@@ -217,7 +226,8 @@ async function cloneUser({ username, lastSynced }) {
 			// sync user
 			const {
 				totalRepos,
-				storageDelta
+				storageDelta,
+				totalUpload
 			} = await (async () => {
 				try {
 					return await cloneUser({ username, lastSynced })
@@ -239,6 +249,23 @@ async function cloneUser({ username, lastSynced }) {
 				params: {
 					totalRepos,
 					storageDelta
+				}
+			});
+
+			const userTime = startTime - Date.now();
+
+			const worker_id = `${os.hostname()}-${process.env.pm_id}`;
+
+			const users_per_minute = 60000 / userTime;
+			const repos_per_minute = usersPerMinute * totalRepos;
+			const bytes_per_minute = usersPerMinute * totalUpload;
+
+			await lockClient.post('/lock/push_stats', null, {
+				params: {
+					worker_id,
+					users_per_minute,
+					repos_per_minute,
+					bytes_per_minute
 				}
 			});
 		} catch(error) {
