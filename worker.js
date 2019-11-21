@@ -260,7 +260,7 @@ async function cloneUser({ username, lastSynced }) {
 			const repos_per_minute = users_per_minute * totalRepos;
 			const bytes_per_minute = users_per_minute * totalUpload;
 
-			await lockClient.post('/lock/push_stats', null, {
+			await lockClient.post('/worker/push_stats', null, {
 				params: {
 					worker_id,
 					users_per_minute,

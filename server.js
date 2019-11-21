@@ -219,7 +219,7 @@ router.post('/lock/:username/error', async ctx => {
 	ctx.body = JSON.stringify(true);
 });
 
-router.post('/lock/push_stats', async ctx => {
+router.post('/worker/push_stats', async ctx => {
 	const {
 		worker_id,
 		users_per_minute,
