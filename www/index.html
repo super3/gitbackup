@@ -108,7 +108,7 @@
       </li>
     </ul>
 
-    <nav aria-label="Page navigation example">
+    <nav aria-label="Page navigation example" v-if="!repoList">
       <ul class="pagination justify-content-center">
         <li class="page-item" v-bind:class="{ disabled: page === 0}">
           <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>
