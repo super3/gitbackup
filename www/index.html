@@ -89,7 +89,7 @@
 						<input id="linuxCommand" class="form-control"  v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle && git clone ${repo}.bundle `">
 
 						<label for="windowsCommand">Windows</label>
-						<input id="windowsCommand" class="form-control" v-if="cloneRepo === repo" v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle -o Space-Invaders-C.bundle; git clone Space-Invaders-C.bundle`">
+						<input id="windowsCommand" class="form-control" v-if="cloneRepo === repo" v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle -o ${repo}.bundle; git clone ${repo}.bundle`">
 					</div>
 				</li>
 			</ul>
