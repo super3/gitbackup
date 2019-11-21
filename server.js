@@ -130,7 +130,8 @@ router.get('/actorlogins', async ctx => {
 router.get('/stats', async ctx => {
 	const {used} = await df.file(__dirname);
 
-	const sumHash = async key => [ 0, ...Object.values(await redis.hgetall(key)).map(Number) ].reduce((a, b) => a + b);
+	const activeWorkers = await redis.zrangebyscore('active-workers', Date.now() - 3600000, '+inf');
+
 
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
@@ -138,9 +139,15 @@ router.get('/stats', async ctx => {
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
 		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
-		usersPerMinute: (await sumHash('speed-stats:users_per_minute')).toFixed(2),
-		reposPerMinute: (await sumHash('speed-stats:repos_per_minute')).toFixed(2),
-		bytesPerMinute: prettyBytes(await sumHash('speed-stats:bytes_per_minute'))
+		usersPerMinute: (await Promise.all(
+			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:users-per-minute:${worker}`) || 0))
+		)).reduce((a, b) => a + b, 0),
+		reposPerMinute: (await Promise.all(
+			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:repos-per-minute:${worker}`) || 0))
+		)).reduce((a, b) => a + b, 0),
+		bytesPerMinute: (await Promise.all(
+			activeWorkers.map(async worker => Number(await redis.get(`speed-stats:bytes-per-minute:${worker}`) || 0))
+		)).reduce((a, b) => a + b, 0)
 	};
 });
 
@@ -227,9 +234,12 @@ router.post('/worker/push_stats', async ctx => {
 		bytes_per_minute
 	} = ctx.query;
 
-	await redis.hset(`speed-stats:users_per_minute`, worker_id, users_per_minute);
-	await redis.hset(`speed-stats:repos_per_minute`, worker_id, repos_per_minute);
-	await redis.hset(`speed-stats:bytes_per_minute`, worker_id, bytes_per_minute);
+	await redis.multi()
+		.zadd('active-workers', Date.now(), worker_id)
+		.set(`speed-stats:users-per-minute:${worker_id}`, users_per_minute, 'EX', 3600)
+		.set(`speed-stats:repos-per-minute:${worker_id}`, repos_per_minute, 'EX', 3600)
+		.set(`speed-stats:bytes-per-minute:${worker_id}`, bytes_per_minute, 'EX', 3600)
+		.exec();
 
 	ctx.body = "true";
 });
