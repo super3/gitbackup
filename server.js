@@ -140,7 +140,7 @@ router.get('/stats', async ctx => {
 		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
 		usersPerMinute: (await sumHash('speed-stats:users_per_minute')).toFixed(2),
 		reposPerMinute: (await sumHash('speed-stats:repos_per_minute')).toFixed(2),
-		bytesPerMinute: (await sumHash('speed-stats:bytes_per_minute')).toFixed(2)
+		bytesPerMinute: prettyBytes(await sumHash('speed-stats:bytes_per_minute'))
 	};
 });
 
