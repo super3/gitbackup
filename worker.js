@@ -250,28 +250,28 @@ async function cloneUser({ username, lastSynced }) {
 					storageDelta
 				}
 			});
+
+			const userTime = Date.now() - startTime;
+
+			const worker_id = `${os.hostname()}-${process.env.pm_id}`;
+
+			const users_per_minute = 60000 / userTime;
+			const repos_per_minute = users_per_minute * totalRepos;
+			const bytes_per_minute = users_per_minute * totalUpload;
+
+			await lockClient.post('/worker/push_stats', null, {
+				params: {
+					worker_id,
+					users_per_minute,
+					repos_per_minute,
+					bytes_per_minute
+				}
+			});
 		} catch(error) {
 			console.log(error);
 
 			// set user to 'error' status
 			await lockClient.post(`/lock/${username}/error`);
 		}
-
-		const userTime = Date.now() - startTime;
-
-		const worker_id = `${os.hostname()}-${process.env.pm_id}`;
-
-		const users_per_minute = 60000 / userTime;
-		const repos_per_minute = users_per_minute * totalRepos;
-		const bytes_per_minute = users_per_minute * totalUpload;
-
-		await lockClient.post('/worker/push_stats', null, {
-			params: {
-				worker_id,
-				users_per_minute,
-				repos_per_minute,
-				bytes_per_minute
-			}
-		});
 	}
 })();
