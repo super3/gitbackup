@@ -143,7 +143,7 @@ router.get('/stats', async ctx => {
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
 		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
 		usersPerMinute: (await getSpeedStat('users-per-minute')).toFixed(2),
-		reposPerMinute: (await getSpeedStat('repo-per-minute')).toFixed(2),
+		reposPerMinute: (await getSpeedStat('repos-per-minute')).toFixed(2),
 		bytesPerMinute: prettyBytes(await getSpeedStat('bytes-per-minute'))
 	};
 });
