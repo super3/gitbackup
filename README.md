@@ -23,52 +23,51 @@ The durable store needs to support the following operations:
 * Getting the last update time for a repository
 * Getting the last error for a repository
 
+To avoid directories with a very large number of entries the paths will be
+constructed with a hash prefix.
+
 The general layout scheme:
 
-| schema | bucket      | username | repository archive |
-|--------|-------------|----------|--------------------|
-| sj://  | github.com/ | octocat/ | Hello-World.bundle |
-| sj://  | github.com/ | octocat/ | Hello-World.zip    |
+| bucket      | sha256sum(username)[:8] | username | repository archive |
+|-------------|-------------------------|----------|--------------------|
+| github.com/ | 2b/cb/c2/d5/            | octocat/ | Hello-World.bundle |
+| github.com/ | 2b/cb/c2/d5/            | octocat/ | Hello-World.zip    |
+| github.com/ | 2b/cb/c2/d5/            | octocat/ | Hello-World.error  |
 
 For example, the ZIP archive of https://github.com/octocat/Hello-World would be
-located at: `sj://github.com/octocat/Hello-World.zip`
+located at: `github.com/2b/cb/c2/d5/octocat/Hello-World.zip`
 
-#### Listing usernames
+#### Sharding
 
-```sh
-uplink ls 'sj://github.com/'
-```
+The data will be sharded across all production satellites to maximize our total
+throughput and available storage. The sharding will be done per user based on
+the first byte of the sha256sum of the username and then equally split among
+the satellites.
 
-#### Getting the last sync time for a username
+Sharing allocations with our current satellites:
 
-Last sync time will be stored as metadata on the username's "directory" entry.
-
-```sh
-uplink meta get 'LastSync' 'sj://github.com/octocat'
-```
-
-#### Getting the repository count for a username
-
-```sh
-uplink meta get 'SyncdRepos' 'sj://github.com/octocat'
-```
+| satellite     | min | max |
+|---------------|-----|-----|
+| asia-east-1   | 00  | 55  |
+| europe-west-1 | 56  | aa  |
+| us-central-1  | ab  | ff  |
 
 #### Listing a user's repositories
 
 ```sh
-uplink ls 'sj://github.com/octocat/'
+rclone ls 'asia-east-1:github.com/2b/cb/c2/d5/octocat/'
 ```
 
 #### Getting the last update time for a repository
 
 ```sh
-uplink meta get 'LastSync' 'sj://github.com/octocat/Hello-World.bundle'
+rclone ls 'asia-east-1:github.com/2b/cb/c2/d5/octocat/Hello-World.bundle'
 ```
 
 #### Getting last error for a repository
 
 ```sh
-uplink meta get 'Error' 'sj://github.com/octocat/Hello-World.bundle'
+rclone cat 'asia-east-1:github.com/2b/cb/c2/d5/octocat/Hello-World.error'
 ```
 
 ### Redis
