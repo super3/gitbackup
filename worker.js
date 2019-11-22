@@ -4,6 +4,7 @@ const {createWriteStream} = require('fs');
 const axios = require('axios');
 const execa = require('execa');
 const storj = require('./lib/rclone');
+const pathing = require('./lib/pathing');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -158,8 +159,9 @@ async function cloneUser({ username, lastSynced }) {
 
 		console.log(repo.full_name, 'mkdir storj parent directory');
 
-		const storjBundlePath = `github.com/${repo.full_name}.bundle`;
-		const storjZipPath = `github.com/${repo.full_name}.zip`;
+		const storjPath = `github.com/${pathing.encode(username)}`;
+		const storjBundlePath = `${storjPath}/${repo.full_name}.bundle`;
+		const storjZipPath = `${storjPath}/${repo.full_name}.zip`;
 
 		// Remove old sizes from total storage delta:
 		storageDelta -= await storjSize(storjBundlePath);
