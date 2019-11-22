@@ -3,11 +3,17 @@ const fs = require('fs').promises;
 const {createWriteStream} = require('fs');
 const axios = require('axios');
 const execa = require('execa');
+const bunyan = require('bunyan');
 const storj = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
+
+const log = bunyan.createLogger({
+	name: `worker${typeof process.env.pm_id === 'string' ? `-${process.env.pm_id}` : ''}`,
+
+});
 
 if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
@@ -22,7 +28,7 @@ async function getGithubEndpoint(...args) {
 			// time to reset + random timeout to avoid multiple workers hitting at once
 			const timeout = ((Number(error.response.headers['x-ratelimit-reset']) * 1000) - Date.now()) + (Math.random() * 10000);
 
-			console.log(`Rate limit reached. Waiting ${Math.floor(timeout / 1000)} seconds.`);
+			log.warn(`Rate limit reached. Waiting ${Math.floor(timeout / 1000)} seconds.`);
 			await new Promise(resolve => setTimeout(resolve, timeout));
 
 			// retry
@@ -89,7 +95,7 @@ async function storjUpload(source, target) {
 	}
 
 	if (err != null || retries === 0) {
-		console.log(err);
+		log.error('Failed to copy to Storj', error);
 		throw new Error('Failed to copy to Storj');
 	}
 }
@@ -114,12 +120,12 @@ async function cloneUser({ username, lastSynced }) {
 	let storageDelta = 0;
 	let totalUpload = 0;
 
-	console.log(username, 'has', repos.length, 'repositories');
+	log.info(username, 'has', repos.length, 'repositories');
 
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
 
-		console.log(repo.full_name, { lastUpdated, lastSynced, updated_at: repo.updated_at });
+		log.info(repo.full_name, { lastUpdated, lastSynced, updated_at: repo.updated_at });
 
 		// skip if repository hasn't been updated since last sync
 		if(lastUpdated < lastSynced) {
@@ -136,7 +142,7 @@ async function cloneUser({ username, lastSynced }) {
 		await execa('rm', ['-rf', repoPath]);
 
 		// Create bundle:
-		console.log(repo.full_name, 'cloning');
+		log.info(repo.full_name, 'cloning');
 
 		try {
 			await execa('git', ['clone', '--mirror', repo.git_url, repoPath]);
@@ -144,12 +150,12 @@ async function cloneUser({ username, lastSynced }) {
 				cwd: repoPath,
 			});
 		} catch(err) {
-			console.log(repo.full_name, 'clone failed');
+			log.error(repo.full_name, 'clone failed');
 			continue;
 		}
 
 		// Download zip:
-		console.log(repo.full_name, 'downloading zip');
+		log.info(repo.full_name, 'downloading zip');
 
 		const {data} = await axios.get(`${repo.html_url}/archive/master.zip`, {
 			responseType: 'stream',
@@ -157,7 +163,7 @@ async function cloneUser({ username, lastSynced }) {
 
 		data.pipe(createWriteStream(repoZipPath));
 
-		console.log(repo.full_name, 'mkdir storj parent directory');
+		log.info(repo.full_name, 'mkdir storj parent directory');
 
 		const storjPath = `github.com/${pathing.encode(username)}`;
 		const storjBundlePath = `${storjPath}/${repo.full_name}.bundle`;
@@ -179,12 +185,12 @@ async function cloneUser({ username, lastSynced }) {
 		totalUpload += (await fs.stat(repoBundlePath)).size;
 		totalUpload += (await fs.stat(repoZipPath)).size;
 
-		console.log(repo.full_name, 'cleaning up');
+		log.info(repo.full_name, 'cleaning up');
 		await execa('rm', [ '-rf', repoBundlePath ]);
 		await execa('rm', [ '-rf', repoZipPath ]);
 		await execa('rm', [ '-rf', repoPath ]);
 
-		console.log(repo.full_name, 'done');
+		log.info(repo.full_name, 'done');
 	}
 
 	// wait 5 seconds after each user
@@ -233,7 +239,7 @@ async function cloneUser({ username, lastSynced }) {
 				try {
 					return await cloneUser({ username, lastSynced })
 				} catch(error) {
-					console.log(`Caught sync failure of '${username}', cleaning up`);
+					log.error(`Caught sync failure of '${username}', cleaning up`);
 					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
 
 					throw error;
@@ -270,7 +276,7 @@ async function cloneUser({ username, lastSynced }) {
 				}
 			});
 		} catch(error) {
-			console.log(error);
+			log.error('user error', error);
 
 			// set user to 'error' status
 			await lockClient.post(`/lock/${username}/error`);
