@@ -161,8 +161,8 @@ async function cloneUser({ username, lastSynced }) {
 		log.info(repo.full_name, 'mkdir storj parent directory');
 
 		const storjPath = `github.com/${pathing.encode(username)}`;
-		const storjBundlePath = `${storjPath}/${repo.full_name}.bundle`;
-		const storjZipPath = `${storjPath}/${repo.full_name}.zip`;
+		const storjBundlePath = `${storjPath}/${repo.name}.bundle`;
+		const storjZipPath = `${storjPath}/${repo.name}.zip`;
 
 		// Remove old sizes from total storage delta:
 		storageDelta -= await storjSize(storjBundlePath);
