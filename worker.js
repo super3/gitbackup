@@ -3,17 +3,12 @@ const fs = require('fs').promises;
 const {createWriteStream} = require('fs');
 const axios = require('axios');
 const execa = require('execa');
-const bunyan = require('bunyan');
+const log = require('./lib/worker-logger');
 const storj = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
-
-const log = bunyan.createLogger({
-	name: `worker${typeof process.env.pm_id === 'string' ? `-${process.env.pm_id}` : ''}`,
-
-});
 
 if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
