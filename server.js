@@ -45,7 +45,7 @@ router.get('/adduser/:user', async ctx => {
 });
 
 router.get('/user/:user/repos', async ctx => {
-	const files = await uplink.ls(`sj://github.com/${pathing.encode(ctx.params.user)}`);
+	const files = await uplink.ls(`sj://github.com/${pathing.encode(ctx.params.user)}/`);
 	const repos = new Set(files.map(file => file.path.split('.').slice(0, -1).join('.')));
 
 	ctx.body = [...repos];
