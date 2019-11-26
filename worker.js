@@ -160,7 +160,7 @@ async function cloneUser({ username, lastSynced }) {
 
 		log.info(repo.full_name, 'mkdir storj parent directory');
 
-		const storjPath = `github.com/${pathing.encode(username)}`;
+		const storjPath = pathing.encode(username);
 		const storjBundlePath = `${storjPath}/${repo.name}.bundle`;
 		const storjZipPath = `${storjPath}/${repo.name}.zip`;
 
