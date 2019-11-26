@@ -90,7 +90,7 @@ async function storjUpload(source, target) {
 	}
 
 	if (err != null || retries === 0) {
-		log.info('Failed to copy to Storj', error);
+		log.error('Failed to copy to Storj', err);
 		throw new Error('Failed to copy to Storj');
 	}
 }
