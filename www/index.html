@@ -1,52 +1,54 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Jekyll v3.8.5">
-    <title>GitBackup</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="@super3, @montyanderson, @calebcase">
 
-    <link rel="icon" type="image/png" href="./assets/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="./assets/favicon-16x16.png" sizes="16x16" />
+		<title>GitBackup</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/14ede0c6f2.js"></script>
+		<link rel="icon" type="image/png" href="./assets/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="./assets/favicon-16x16.png" sizes="16x16" />
 
-    <!-- development version, includes helpful console warnings -->
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+		<script src="https://kit.fontawesome.com/14ede0c6f2.js"></script>
 
-    <!-- axios -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+		<!-- development version, includes helpful console warnings -->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
-    <!-- production version, optimized for size and speed -->
-    <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+		<!-- axios -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 
-    <!-- Custom styles for this template -->
-    <link href="./assets/floating-labels.css" rel="stylesheet">
-	<link href="./assets/style.css" rel="stylesheet">
-  </head>
-  <body>
-    <div class="form-signin" _lpchecked="1">
+		<!-- production version, optimized for size and speed -->
+		<!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+
+		<!-- Custom styles for this template -->
+		<link href="./assets/floating-labels.css" rel="stylesheet">
+		<link href="./assets/style.css" rel="stylesheet">
+	</head>
+	<body>
+	<div class="form-signin" _lpchecked="1">
 
 
   <div id="app">
-    <div class="text-center mb-4">
+	<div class="text-center mb-4">
 		<a href="/">
-	      <img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
-	      <h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
-	    </a>
+		  <img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
+		  <h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
+		</a>
 
-      <p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
-    </div>
+	  <p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
+	</div>
 
-    <div class="form-label-group" v-if="!repoList && repoListLoading === false">
-      <input v-model="search" v-on:keydown="loadPage(0); checkUser();"  class="form-control search" required="" autofocus="" autocomplete="off" type="text" onsubmit="return false">
+	<div class="form-label-group" v-if="!repoList && repoListLoading === false">
+	  <input v-model="search" v-on:keydown="loadPage(0); checkUser();"  class="form-control search" required="" autofocus="" autocomplete="off" type="text" onsubmit="return false">
 
-      <label for="inputEmail">Type in a GitHub username or organization...</label>
-    </div>
+	  <label for="inputEmail">Type in a GitHub username or organization...</label>
+	</div>
 
 	<div v-if="repoList">
 		<div class="card">
@@ -102,15 +104,15 @@
 		<div class="spinner-border" ></div>
 	</div>
 
-    <ul class="list-group" v-if="!repoList && repoListLoading === false">
-      <li v-if="search && exists !== true" class="list-group-item d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-user"></i> {{search}}</span>
-        <button type="button" class="btn btn-sm btn-success" v-bind:disabled="!isValidUser" v-on:click="addUser">
-          <i class="fas fa-plus"></i> Add
-        </button>
-      </li>
+	<ul class="list-group" v-if="!repoList && repoListLoading === false">
+	  <li v-if="search && exists !== true" class="list-group-item d-flex justify-content-between align-items-center">
+		<span><i class="fas fa-user"></i> {{search}}</span>
+		<button type="button" class="btn btn-sm btn-success" v-bind:disabled="!isValidUser" v-on:click="addUser">
+		  <i class="fas fa-plus"></i> Add
+		</button>
+	  </li>
 
-      <li v-for="user in users" class="list-group-item ">
+	  <li v-for="user in users" class="list-group-item ">
 		<div class="d-flex justify-content-between align-items-center">
 			<span><i class="fas fa-user"></i> {{user.username | truncateUsername}}</span>
 
@@ -128,18 +130,18 @@
 				</button>
 			</div>
 		</div>
-      </li>
-    </ul>
+	  </li>
+	</ul>
 
-    <nav aria-label="Page navigation example" v-if="!repoList && repoListLoading === false">
-      <ul class="pagination justify-content-center">
-        <li class="page-item" v-bind:class="{ disabled: page === 0}">
-          <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>
-        </li>
+	<nav aria-label="Page navigation example" v-if="!repoList && repoListLoading === false">
+	  <ul class="pagination justify-content-center">
+		<li class="page-item" v-bind:class="{ disabled: page === 0}">
+		  <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>
+		</li>
 
-        <li v-if="page === 0" class="page-item disabled"><a class="page-link" href="#">0</a></li>
-        <li v-if="page === 0 && totalPages > 1" class="page-item"><a class="page-link" v-on:click="loadPage(1)" href="#">1</a></li>
-        <li v-if="page === 0 && totalPages > 2" class="page-item"><a class="page-link" v-on:click="loadPage(2)" href="#">2</a></li>
+		<li v-if="page === 0" class="page-item disabled"><a class="page-link" href="#">0</a></li>
+		<li v-if="page === 0 && totalPages > 1" class="page-item"><a class="page-link" v-on:click="loadPage(1)" href="#">1</a></li>
+		<li v-if="page === 0 && totalPages > 2" class="page-item"><a class="page-link" v-on:click="loadPage(2)" href="#">2</a></li>
 
 		<li v-if="page !== 0 && page !== totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
 		<li v-if="page !== 0 && page !== totalPages - 1 && totalPages > 1" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
@@ -149,11 +151,11 @@
 		<li v-if="page !== 0 && page === totalPages - 1 && totalPages > 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
 		<li v-if="page !== 0 && page === totalPages - 1 && totalPages > 2" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
 
-        <li class="page-item" v-bind:class="{ disabled: page + 1 == totalPages}">
-          <a v-on:click="loadPage(page + 1)"  class="page-link" href="#">Next</a>
-        </li>
-      </ul>
-    </nav>
+		<li class="page-item" v-bind:class="{ disabled: page + 1 == totalPages}">
+		  <a v-on:click="loadPage(page + 1)"  class="page-link" href="#">Next</a>
+		</li>
+	  </ul>
+	</nav>
 
 	  <p class="mt-5 mb-3 text-muted text-center">
 		<span v-if="stats">Storing {{stats.storage}}, {{stats.repos}} repositories, and {{stats.users}} users<br></span>
