@@ -90,7 +90,7 @@ async function storjUpload(source, target) {
 	}
 
 	if (err != null || retries === 0) {
-		log.error('Failed to copy to Storj', error);
+		log.info('Failed to copy to Storj', error);
 		throw new Error('Failed to copy to Storj');
 	}
 }
@@ -145,7 +145,7 @@ async function cloneUser({ username, lastSynced }) {
 				cwd: repoPath,
 			});
 		} catch(err) {
-			log.error(repo.full_name, 'clone failed');
+			log.info(repo.full_name, 'clone failed');
 			continue;
 		}
 
@@ -234,7 +234,7 @@ async function cloneUser({ username, lastSynced }) {
 				try {
 					return await cloneUser({ username, lastSynced })
 				} catch(error) {
-					log.error(`Caught sync failure of '${username}', cleaning up`);
+					log.info(`Caught sync failure of '${username}', cleaning up`);
 					await execa('rm', [ '-rf', `${__dirname}/repos/${username}` ]);
 
 					throw error;
@@ -271,7 +271,7 @@ async function cloneUser({ username, lastSynced }) {
 				}
 			});
 		} catch(error) {
-			log.error('user error', error);
+			log.info('user error', error);
 
 			// set user to 'error' status
 			await lockClient.post(`/lock/${username}/error`);
