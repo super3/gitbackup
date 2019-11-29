@@ -2,9 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ovsoinc/gitbackup.svg?branch=master)](https://travis-ci.org/ovsoinc/gitbackup) [![Coverage Status](https://coveralls.io/repos/github/ovsoinc/gitbackup/badge.svg?branch=master)](https://coveralls.io/github/ovsoinc/gitbackup?branch=master)
 
-Backup Github user repositories.
-
-## Design
+We backup and archive GitHub.
 
 Storj serves as our durable store for all data and metadata. Redis will serve
 as the store for ephmerical data and data cached for speed reasons.
@@ -82,15 +80,13 @@ relock after 5 seconds.
 Initially getting the lock:
 
 ```redis
-SET "lock:github.com/octocat" "1234.0.worker.gitbackup.org" EX 10 NX
+SET "lock:octocat" 1 EX 10 NX
 ```
-
-Where `1234` is a random identifier the worker creates on startup.
 
 Relocking:
 
 ```redis
-SET "lock:github.com/octocat" "1234.0.worker.gitbackup.org" EX 10 XX
+EXPIRE "lock:octocat" 10
 ```
 
 Locks are not explicitly deleted and are left to expire.
@@ -107,7 +103,7 @@ Initially each user is added to the `tracked` sorted set:
 ZADD tracked 0 "github.com/octocat"
 ```
 
-Where `0` is the last time the user fully synced or `-inf` if it has never been
+Where `0` is the last time the user fully synced or `-1` if it has never been
 done.
 
 Getting the next user to sync is accomplished by retrieving user's sorted by
@@ -115,40 +111,7 @@ score (and then skipping any that are locked):
 
 ```redis
 ZRANGEBYSCORE tracked "-inf" "+inf" LIMIT 0 1
-SET "lock:github.com/octocat" 1 EX 10 NX
-```
-
-## Setting Up Server
-
-```
-node server
-```
-
-## Syncing Users
-
-```
-apt-get install jq zip
-```
-
-```
-./sync_users.sh
-```
-
-## Reset sync
-
-```
-$ redis-cli zunionstore tracked 1 tracked WEIGHTS 0
-```
-
-## Syncing Stats
-```
-./update_stats.sh
-```
-
-## Add Users Manually
-
-```
-node track-users.js [github_users_dump.json] [# of users to add]
+SET "lock:octocat" 1 EX 10 NX
 ```
 
 ---
