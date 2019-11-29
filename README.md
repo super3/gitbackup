@@ -4,6 +4,8 @@
 
 We backup and archive GitHub.
 
+## Design
+
 Storj serves as our durable store for all data and metadata. Redis will serve
 as the store for ephmerical data and data cached for speed reasons.
 
