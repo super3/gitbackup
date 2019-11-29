@@ -6,7 +6,6 @@ const humanNumber = require('human-number');
 const df = require('@sindresorhus/df');
 const redis = require('./redis');
 const search = require('./search');
-const uplink = require('./lib/uplink');
 const rclone = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 
@@ -45,7 +44,7 @@ router.get('/adduser/:user', async ctx => {
 });
 
 router.get('/user/:user/repos', async ctx => {
-	const files = await uplink.ls(`sj://github.com/${pathing.encode(ctx.params.user)}/`);
+	const files = await rclone.ls(pathing.encode(ctx.params.user));
 
 	const repos = new Set(files.map(file => file.path.split('.').slice(0, -1).join('.')));
 
@@ -55,7 +54,7 @@ router.get('/user/:user/repos', async ctx => {
 router.get('/repos/:user/:repo', async ctx => {
 	ctx.set('Content-Type', 'application/zip');
 
-	const path = `sj://github.com/${pathing.encode(ctx.params.user)}/${ctx.params.repo}`;
+	const path = `${pathing.encode(ctx.params.user)}/${ctx.params.repo}`;
 	console.log(path);
 
 	if(path.endsWith('.zip') === true) {
@@ -66,7 +65,7 @@ router.get('/repos/:user/:repo', async ctx => {
 		ctx.set('Content-Type', 'application/x-git');
 	}
 
-	ctx.body = uplink.cat(path);
+	ctx.body = rclone.cat(path);
 });
 
 router.get('/userlist/:page', async ctx => {
