@@ -40,7 +40,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "coveralls": "^3.0.8",
+    "coveralls": "^3.0.9",
     "istanbul": "^1.1.0-alpha.1",
     "jest": "^24.9.0",
     "supertest": "^4.0.2",
