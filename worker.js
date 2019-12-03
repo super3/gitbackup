@@ -117,6 +117,8 @@ async function cloneUser({ username, lastSynced }) {
 
 	log.info(username, 'has', repos.length, 'repositories');
 
+	let totalRepos = 0;
+
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
 
@@ -185,6 +187,7 @@ async function cloneUser({ username, lastSynced }) {
 		await execa('rm', [ '-rf', repoZipPath ]);
 		await execa('rm', [ '-rf', repoPath ]);
 
+		totalRepos++;
 		log.info(repo.full_name, 'done');
 	}
 
@@ -192,7 +195,7 @@ async function cloneUser({ username, lastSynced }) {
 	await new Promise(resolve => setTimeout(resolve, 5000));
 
 	return {
-		totalRepos: repos.length,
+		totalRepos,
 		storageDelta,
 		totalUpload
 	};
