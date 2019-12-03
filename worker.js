@@ -129,6 +129,11 @@ async function cloneUser({ username, lastSynced }) {
 			continue;
 		}
 
+		// skip if repository is too big
+		if(repo.size > 4250000) {
+			continue;
+		}
+
 		const repoPath = `${__dirname}/repos/${repo.full_name}`;
 		const repoBundlePath = `${repoPath}.bundle`;
 		const repoZipPath = `${repoPath}.zip`;
