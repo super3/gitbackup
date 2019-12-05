@@ -14,8 +14,6 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
 }
 
-return
-
 async function getGithubEndpoint(...args) {
 	try {
 		return await axios.get(...args);
