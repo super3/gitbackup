@@ -153,7 +153,7 @@ router.get('/stats', async ctx => {
 router.get('/worker-stats', async ctx => {
 	const activeWorkers = await redis.zrangebyscore('active-workers', Date.now() - 3600000, '+inf');
 
-	ctx.body = JSON.stringify(await Promise.all(activeWorkers.map(async worker => ({
+	ctx.body = JSON.stringify(await Promise.all(activeWorkers.sort().map(async worker => ({
 		worker,
 		usersPerMinute: Number(await redis.get(`speed-stats:users-per-minute:${worker}`)).toFixed(3),
 		reposPerMinute: Number(await redis.get(`speed-stats:repos-per-minute:${worker}`)).toFixed(3),
