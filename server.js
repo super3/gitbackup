@@ -8,6 +8,7 @@ const redis = require('./redis');
 const search = require('./search');
 const rclone = require('./lib/rclone');
 const pathing = require('./lib/pathing');
+const speedStats = require('./lib/speed-stats');
 
 const app = module.exports = new Koa();
 const router = new Router();
@@ -132,21 +133,15 @@ router.get('/actorlogins', async ctx => {
 router.get('/stats', async ctx => {
 	const {used} = await df.file(__dirname);
 
-	const activeWorkers = await redis.zrangebyscore('active-workers', Date.now() - 3600000, '+inf');
-
-	const getSpeedStat = async stat => (await Promise.all(
-		activeWorkers.map(async worker => Number(await redis.get(`speed-stats:${stat}:${worker}`) || 0))
-	)).reduce((a, b) => a + b, 0);
-
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
-		users: (await redis.zrangebyscore('tracked', 1, '+inf')).length,
-		usersPerMinute: (await getSpeedStat('users-per-minute')).toFixed(2),
-		reposPerMinute: (await getSpeedStat('repos-per-minute')).toFixed(2),
-		bytesPerMinute: prettyBytes(await getSpeedStat('bytes-per-minute'))
+		users: (await redis.zrangebyscore('tracked', 1,  '+inf')).length,
+		usersPerMinute: await speedStats.getStat('users-per-minute'),
+		reposPerMinute: await speedStats.getStat('repos-per-minute'),
+		bytesPerMinute: prettyBytes(await speedStats.getStat('bytes-per-minute'))
 	};
 });
 
@@ -155,9 +150,9 @@ router.get('/worker-stats', async ctx => {
 
 	ctx.body = JSON.stringify(await Promise.all(activeWorkers.sort().map(async worker => ({
 		worker,
-		usersPerMinute: Number(await redis.get(`speed-stats:users-per-minute:${worker}`)).toFixed(3),
-		reposPerMinute: Number(await redis.get(`speed-stats:repos-per-minute:${worker}`)).toFixed(3),
-		bytesPerMinute: Number(await redis.get(`speed-stats:bytes-per-minute:${worker}`)).toFixed(3)
+		usersPerMinute: (await speedStats.getWorkerStat('users-per-minute', worker)).toFixed(3),
+		reposPerMinute: (await speedStats.getWorkerStat('repos-per-minute', worker)).toFixed(3),
+		bytesPerMinute: (await speedStats.getWorkerStat('bytes-per-minute', worker)).toFixed(3)
 	}))), null, "\t")
 });
 
@@ -244,12 +239,9 @@ router.post('/worker/push_stats', async ctx => {
 		bytes_per_minute
 	} = ctx.query;
 
-	await redis.multi()
-		.zadd('active-workers', Date.now(), worker_id)
-		.set(`speed-stats:users-per-minute:${worker_id}`, users_per_minute, 'EX', 3600)
-		.set(`speed-stats:repos-per-minute:${worker_id}`, repos_per_minute, 'EX', 3600)
-		.set(`speed-stats:bytes-per-minute:${worker_id}`, bytes_per_minute, 'EX', 3600)
-		.exec();
+	await speedStats.setWorkerStat('users-per-minute', users_per_minute, worker_id);
+	await speedStats.setWorkerStat('repos-per-minute', users_per_minute, worker_id);
+	await speedStats.setWorkerStat('bytes-per-minute', users_per_minute, worker_id);
 
 	ctx.body = "true";
 });
