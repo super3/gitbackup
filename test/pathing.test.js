@@ -7,7 +7,7 @@ test('encode', async () => {
 
 test('decode', async () => {
 	expect(pathing.decode(`us-central-1:${pathing.bucket}/bc/be/22/6e/montyanderson`)).toBe('montyanderson');
-	expect(pathing.decode(`europe-west-1:${pathing.bucket}/70/d1/ea/99/calebcase`'`)).toBe('calebcase');
+	expect(pathing.decode(`europe-west-1:${pathing.bucket}/70/d1/ea/99/calebcase`)).toBe('calebcase');
 
 	expect(() => {
 		pathing.decode(`us-central-1:${pathing.bucket}/be/be/22/6e/montyanderson`);
