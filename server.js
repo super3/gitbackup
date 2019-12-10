@@ -131,14 +131,12 @@ router.get('/actorlogins', async ctx => {
 });
 
 router.get('/stats', async ctx => {
-	const {used} = await df.file(__dirname);
-
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		// users: humanNumber(Number(await redis.get('stats:users')), n => Number.parseFloat(n).toFixed(1))
-		users: (await redis.zrangebyscore('tracked', 1,  '+inf')).length,
+		users: await redis.zcount('tracked', 1, '+inf'),
 		usersPerMinute: await speedStats.getStat('users-per-minute'),
 		reposPerMinute: await speedStats.getStat('repos-per-minute'),
 		bytesPerMinute: prettyBytes(await speedStats.getStat('bytes-per-minute'))
