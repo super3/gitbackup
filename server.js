@@ -137,8 +137,8 @@ router.get('/stats', async ctx => {
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		users: await redis.zcount('tracked', 1, '+inf'),
 		usersPerMinute: await speedStats.getStat('users-per-minute'),
-		reposPerMinute: await speedStats.getStat('repos-per-minute')//,
-		//bytesPerMinute: prettyBytes(await speedStats.getStat('bytes-per-minute'))
+		reposPerMinute: await speedStats.getStat('repos-per-minute'),
+		bytesPerMinute: prettyBytes(await speedStats.getStat('bytes-per-minute'))
 	};
 });
 
