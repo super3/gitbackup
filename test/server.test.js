@@ -336,6 +336,7 @@ test('/lock/:username/last_synced', async () => {
 	expect(response.data).toBeGreaterThan(1);
 });
 
+/*
 test('/user/:user/repos', async () => {
 	uplink.ls = () => ([
 		{ path: 'file-a.zip' },
@@ -379,3 +380,4 @@ test('/repos/:user/:repo', async () => {
 
 	expect(response.data).toBe(testValue);
 });
+*/
