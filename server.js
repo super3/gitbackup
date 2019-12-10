@@ -237,8 +237,8 @@ router.post('/worker/push_stats', async ctx => {
 	} = ctx.query;
 
 	await speedStats.setWorkerStat('users-per-minute', worker_id, users_per_minute);
-	await speedStats.setWorkerStat('repos-per-minute', worker_id, users_per_minute);
-	await speedStats.setWorkerStat('bytes-per-minute', worker_id , users_per_minute);
+	await speedStats.setWorkerStat('repos-per-minute', worker_id, repos_per_minute);
+	await speedStats.setWorkerStat('bytes-per-minute', worker_id, bytes_per_minute);
 
 	ctx.body = "true";
 });
