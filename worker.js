@@ -119,6 +119,17 @@ async function cloneUser({ username, lastSynced }) {
 
 	let totalRepos = 0;
 
+	const jsonPath = `${__dirname}/repos/${username}.json`;
+	const storjJsonPath = `${pathing.encode(username)}.json`;
+
+	await fs.writeFile(jsonPath, JSON.stringify(repos));
+
+	storageDelta -= await storjSize(storjJsonPath);
+	await storjUpload(jsonPath, storjJsonPath);
+	storageDelta += (await fs.stat(jsonPath)).size;
+
+	await fs.unlink(jsonPath);
+
 	for(const repo of repos) {
 		const lastUpdated = new Date(repo.updated_at);
 
