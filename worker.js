@@ -223,7 +223,7 @@ async function cloneUser({ username, lastSynced }) {
 
 	const lockClient = axios.create({
 		baseURL: process.env.SERVER_URL || 'http://localhost:8000',
-		timeout: 1000,
+		timeout: 10000,
 		headers: {
 			'X-Worker-Token': process.env.WORKER_TOKEN
 		}
