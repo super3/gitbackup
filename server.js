@@ -52,6 +52,10 @@ router.get('/user/:user/repos', async ctx => {
 	ctx.body = [...repos];
 });
 
+router.get('/user/:user/json', async ctx => {
+	ctx.body = await rclone.cat(`${pathing.encode(ctx.params.user)}.json`);
+});
+
 router.get('/repos/:user/:repo', async ctx => {
 	ctx.set('Content-Type', 'application/zip');
 
