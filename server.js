@@ -131,14 +131,21 @@ router.get('/actorlogins', async ctx => {
 });
 
 router.get('/stats', async ctx => {
+	const usersT = await redis.zrangebyscore('tracked', Date.now() - 60000, Date.now());
+
+	const usersPerMinute = usersT.length;
+
+	const reposPerMinute (await Promise.all(usersT.map(user => Number(await redis.get(`user:${user}`)))))
+		.reduce((a, b) => a + b);
+
 	ctx.body = {
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),
 		users: await redis.zcount('tracked', 1, '+inf'),
 		//usersPerMinute: (await speedStats.getStat('users-per-minute')).toFixed(2),
-		usersPerMinute: await redis.zcount('tracked', Date.now() - 60000, Date.now()),
-		reposPerMinute: (await speedStats.getStat('repos-per-minute')).toFixed(2),
+		usersPerMinute,
+		reposPerMinute,
 		bytesPerMinute: prettyBytes(await speedStats.getStat('bytes-per-minute'))
 	};
 });
