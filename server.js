@@ -53,7 +53,11 @@ router.get('/user/:user/repos', async ctx => {
 });
 
 router.get('/user/:user/json', async ctx => {
-	ctx.body = await rclone.cat(`${pathing.encode(ctx.params.user)}.json`);
+	ctx.set('Content-Type', 'application/json'):
+
+	const raw = await rclone.cat(`${pathing.encode(ctx.params.user)}.json`);
+
+	ctx.body = JSON.stringify(raw, null, '\t');
 });
 
 router.get('/repos/:user/:repo', async ctx => {
