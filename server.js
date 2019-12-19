@@ -135,7 +135,7 @@ router.get('/stats', async ctx => {
 
 	const usersPerMinute = usersT.length;
 
-	const reposPerMinute = (await Promise.all(usersT.map(user => Number(await redis.get(`user:${user}`)))))
+	const reposPerMinute = (await Promise.all(usersT.map(async user => Number(await redis.get(`user:${user}`)))))
 		.reduce((a, b) => a + b);
 
 	ctx.body = {
