@@ -112,6 +112,8 @@ async function storjSize(path) {
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
 	const repos = await getRepos({ username });
+	const reportedRepos = repos.length;
+
 	let storageDelta = 0;
 	let totalUpload = 0;
 
@@ -212,6 +214,7 @@ async function cloneUser({ username, lastSynced }) {
 
 	return {
 		totalRepos,
+		reportedRepos,
 		storageDelta,
 		totalUpload
 	};
@@ -247,6 +250,7 @@ async function cloneUser({ username, lastSynced }) {
 			// sync user
 			const {
 				totalRepos,
+				reportedRepos,
 				storageDelta,
 				totalUpload
 			} = await (async () => {
@@ -269,6 +273,7 @@ async function cloneUser({ username, lastSynced }) {
 			await lockClient.post(`/lock/${username}/complete`, null, {
 				params: {
 					totalRepos,
+					reportedRepos,
 					storageDelta
 				}
 			});

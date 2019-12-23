@@ -2,9 +2,15 @@
 
 [![Build Status](https://travis-ci.org/ovsoinc/gitbackup.svg?branch=master)](https://travis-ci.org/ovsoinc/gitbackup) [![Coverage Status](https://coveralls.io/repos/github/ovsoinc/gitbackup/badge.svg?branch=master)](https://coveralls.io/github/ovsoinc/gitbackup?branch=master)
 
-We backup and archive GitHub.
+> We backup and archive GitHub.
+
+GitBackup was built at [Storj](https://storj.io/) by @super3, @montyanderson, and @calebcase.
 
 ## Design
+
+We have a single central server exposing a REST API used by both the user interface and by workers.
+
+Workers operate statelessly and can be scaled, limited only by the central server's ability to provision work.
 
 Storj serves as our durable store for all data and metadata. Redis will serve
 as the store for ephmerical data and data cached for speed reasons.
