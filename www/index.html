@@ -53,18 +53,30 @@
 	<div v-if="repoList">
 		<div class="card">
 			<div class="card-header justify-content-between align-items-center">
-				<a href="/"><i class="fas fa-long-arrow-alt-left"></i></a>
-				<span><i class="fas fa-user"></i> {{repoList.user.username | truncateUsername}}</span>
+				<div class="row">
+					<div class="col">
+						<a class="btn btn-sm btn-outline-dark" href="/">
+							<i class="fas fa-long-arrow-alt-left"></i>
+							Back
+						</a>
+					</div>
 
-				<div class="btn-group float-right" role="group" aria-label="Basic example">
-					<button type="button" class="btn btn-sm" v-bind:class="{
-						'btn-outline-success': repoList.user.status === 'synced',
-						'btn-outline-warning': repoList.user.status === 'syncing',
-						'btn-outline-danger': repoList.user.status === 'unsynced',
-						'btn-outline-dark': repoList.user.status === 'error'
-					}">
-						<i class="fas fa-sync-alt"></i> {{repoList.user.status | capitalize}}
-					</button>
+					<div class="col" style="text-align: center; padding-top: 3px;">
+						<i class="fas fa-user"></i> {{repoList.user.username | truncateUsername}}
+					</div>
+
+					<div class="col">
+						<div class="btn-group float-right" role="group" aria-label="Basic example">
+							<button type="button" class="btn btn-sm" v-bind:class="{
+								'btn-outline-success': repoList.user.status === 'synced',
+								'btn-outline-warning': repoList.user.status === 'syncing',
+								'btn-outline-danger': repoList.user.status === 'unsynced',
+								'btn-outline-dark': repoList.user.status === 'error'
+							}">
+								<i class="fas fa-sync-alt"></i> {{repoList.user.status | capitalize}}
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
 
