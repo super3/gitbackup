@@ -109,6 +109,7 @@ router.get('/userlist/:page', async ctx => {
 	const users = await Promise.all(filteredUsers.map(async username => ({
 		username,
 		totalRepos: Number(await redis.get(`user:${username}`)),
+		reportedRepos: Number(await redis.get(`user:${username}:reported-repos`)),
 		status:
 			// if locked
 			await redis.exists(`lock:${username}`)

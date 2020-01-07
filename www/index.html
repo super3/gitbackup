@@ -130,7 +130,7 @@
 
 			<div class="btn-group" role="group" aria-label="Basic example">
 				<button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
-					<i class="fas fa-code-branch"></i> View {{user.totalRepos}} Repos
+					<i class="fas fa-code-branch"></i> View {{user.totalRepos}}/{{user.reportedRepos}} Repos
 				</button>
 				<button type="button" class="btn btn-sm" v-bind:class="{
 					'btn-outline-success': user.status === 'synced',
