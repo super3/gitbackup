@@ -111,6 +111,8 @@ async function storjSize(path) {
 
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
+	let publicLog = '';
+
 	const repos = await getRepos({ username });
 	const reportedRepos = repos.length;
 
@@ -136,14 +138,17 @@ async function cloneUser({ username, lastSynced }) {
 		const lastUpdated = new Date(repo.updated_at);
 
 		log.info(repo.full_name, { lastUpdated, lastSynced, updated_at: repo.updated_at });
+		publicLog += `${repo.full_name} ${JSON.stringify({ lastUpdated, lastSynced, updated_at: repo.updated_at })}\n`;
 
 		// skip if repository hasn't been updated since last sync
 		if(lastUpdated < lastSynced) {
+			publicLog += `repository hasn't been updated since last sync. skipping\n`;
 			continue;
 		}
 
 		// skip if repository is too big
 		if(repo.size > 4250000) {
+			publicLog += `repository is too big (${repo.size}). skipping\n`;
 			continue;
 		}
 
@@ -158,6 +163,7 @@ async function cloneUser({ username, lastSynced }) {
 
 		// Create bundle:
 		log.info(repo.full_name, 'cloning');
+		publicLog += `cloning\n`;
 
 		try {
 			await execa('git', ['clone', '--mirror', repo.git_url, repoPath]);
@@ -166,11 +172,13 @@ async function cloneUser({ username, lastSynced }) {
 			});
 		} catch(err) {
 			log.info(repo.full_name, 'clone failed');
+			publicLog += 'clone failed. skipping\n';
 			continue;
 		}
 
 		// Download zip:
 		log.info(repo.full_name, 'downloading zip');
+		publicLog += 'downloading zip\n';
 
 		const {data} = await axios.get(`${repo.html_url}/archive/master.zip`, {
 			responseType: 'stream',
@@ -201,6 +209,8 @@ async function cloneUser({ username, lastSynced }) {
 		totalUpload += (await fs.stat(repoZipPath)).size;
 
 		log.info(repo.full_name, 'cleaning up');
+		publicLog += 'cleaning up\n';
+
 		await execa('rm', [ '-rf', repoBundlePath ]);
 		await execa('rm', [ '-rf', repoZipPath ]);
 		await execa('rm', [ '-rf', repoPath ]);
@@ -208,6 +218,13 @@ async function cloneUser({ username, lastSynced }) {
 		totalRepos++;
 		log.info(repo.full_name, 'done');
 	}
+
+	const logPath = `${__dirname}/repos/${username}.log`;
+	const storjLogPath = `${pathing.encode(username)}.log`;
+
+	storageDelta -= await storjSize(storjLogPath);
+	await storjUpload(logPath, storjLogPath);
+	storageDelta += (await fs.stat(logPath)).size;
 
 	// wait 5 seconds after each user
 	await new Promise(resolve => setTimeout(resolve, 5000));
