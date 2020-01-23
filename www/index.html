@@ -12,16 +12,10 @@
 		<link rel="icon" type="image/png" href="./assets/favicon-32x32.png" sizes="32x32" />
 		<link rel="icon" type="image/png" href="./assets/favicon-16x16.png" sizes="16x16" />
 
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 		<script src="https://kit.fontawesome.com/14ede0c6f2.js"></script>
-
-		<!-- development version, includes helpful console warnings -->
-		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-
-		<!-- axios -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 
 		<!-- production version, optimized for size and speed -->
 		<!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
@@ -34,149 +28,7 @@
 	<div class="form-signin" _lpchecked="1">
 
 
-  <div id="app">
-	<div class="text-center mb-4">
-		<a href="/">
-		  <img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
-		  <h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
-		</a>
+    <div id="app"></div>
 
-	  <p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
-	</div>
-
-	<div class="form-label-group" v-if="!repoList && repoListLoading === false">
-	  <input v-model="search" v-on:keydown="loadPage(0); checkUser();"  class="form-control search" required="" autofocus="" autocomplete="off" type="text" onsubmit="return false">
-
-	  <label for="inputEmail">Type in a GitHub username or organization...</label>
-	</div>
-
-	<div v-if="repoList">
-		<div class="card">
-			<div class="card-header justify-content-between align-items-center">
-				<div class="row">
-					<div class="col">
-						<a class="btn btn-sm btn-outline-dark" href="/">
-							<i class="fas fa-long-arrow-alt-left"></i>
-							Back
-						</a>
-					</div>
-
-					<div class="col" style="text-align: center; padding-top: 3px;">
-						<i class="fas fa-user"></i> {{repoList.user.username | truncateUsername}}
-					</div>
-
-					<div class="col">
-						<div class="btn-group float-right" role="group" aria-label="Basic example">
-							<button type="button" class="btn btn-sm" v-bind:class="{
-								'btn-outline-success': repoList.user.status === 'synced',
-								'btn-outline-warning': repoList.user.status === 'syncing',
-								'btn-outline-danger': repoList.user.status === 'unsynced',
-								'btn-outline-dark': repoList.user.status === 'error'
-							}">
-								<i class="fas fa-sync-alt"></i> {{repoList.user.status | capitalize}}
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<ul class="list-group list-group-flush" style="padding-bottom: 0;">
-				<li class="list-group-item" v-for="repo in repoList.repos">
-					{{repo}}
-
-					<div class="float-right">
-						<div>
-							<a v-bind:href="`repos/${repoList.user.username}/${repo}.zip`">
-								<button class="btn btn-sm btn-outline-dark"><i class="fas fa-download"></i> Download ZIP</button>
-							</a>
-
-							<a>
-								<button class="btn btn-sm btn-outline-dark" v-on:click="cloneRepo = cloneRepo === repo ? false : repo"><i class="fas fa-download"></i> Clone Repo</button>
-							</a>
-						</div>
-					</div>
-
-					<div v-if="cloneRepo === repo" style="margin-bottom: 1rem">
-						<hr>
-
-						<label for="linuxCommand"><i class="fab fa-linux"></i> Linux / <i class="fab fa-apple"></i> Mac</label>
-
-						<input id="linuxCommand" class="form-control"  v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle && git clone ${repo}.bundle `">
-
-						<label for="windowsCommand" style="margin-top: 0.5rem;"><i class="fab fa-windows"></i> Windows</label>
-						<input id="windowsCommand" class="form-control" v-if="cloneRepo === repo" v-bind:value="`wget https://gitbackup.org/repos/${repoList.user.username}/${repo}.bundle -o ${repo}.bundle; git clone ${repo}.bundle`">
-					</div>
-				</li>
-			</ul>
-		</div>
-	</div>
-
-	<div v-if="repoListLoading === true" style="text-align: center; padding: 2rem;">
-		<p>Fetching {{search}}'s repos...</p>
-		<div class="spinner-border" ></div>
-	</div>
-
-	<ul class="list-group" v-if="!repoList && repoListLoading === false">
-	  <li v-if="search && exists !== true" class="list-group-item d-flex justify-content-between align-items-center">
-		<span><i class="fas fa-user"></i> {{search}}</span>
-		<button type="button" class="btn btn-sm btn-success" v-bind:disabled="!isValidUser" v-on:click="addUser">
-		  <i class="fas fa-plus"></i> Add
-		</button>
-	  </li>
-
-	  <li v-for="user in users" class="list-group-item ">
-		<div class="d-flex justify-content-between align-items-center">
-			<span><i class="fas fa-user"></i> {{user.username | truncateUsername}}</span>
-
-			<div class="btn-group" role="group" aria-label="Basic example">
-				<button type="button" class="btn btn-sm btn-outline-dark" v-on:click="loadRepos(user)">
-					<i class="fas fa-code-branch"></i> View {{user.totalRepos}}/{{user.reportedRepos}} Repos
-				</button>
-				<button type="button" class="btn btn-sm" v-bind:class="{
-					'btn-outline-success': user.status === 'synced',
-					'btn-outline-warning': user.status === 'syncing',
-					'btn-outline-danger': user.status === 'unsynced',
-					'btn-outline-dark': user.status === 'error'
-				}">
-					<i class="fas fa-sync-alt"></i> {{user.status | capitalize}}
-				</button>
-			</div>
-		</div>
-	  </li>
-	</ul>
-
-	<nav aria-label="Page navigation example" v-if="!repoList && repoListLoading === false">
-	  <ul class="pagination justify-content-center">
-		<li class="page-item" v-bind:class="{ disabled: page === 0}">
-		  <a v-on:click="loadPage(page - 1)" class="page-link" href="#" tabindex="-1">Previous</a>
-		</li>
-
-		<li v-if="page === 0" class="page-item disabled"><a class="page-link" href="#">0</a></li>
-		<li v-if="page === 0 && totalPages > 1" class="page-item"><a class="page-link" v-on:click="loadPage(1)" href="#">1</a></li>
-		<li v-if="page === 0 && totalPages > 2" class="page-item"><a class="page-link" v-on:click="loadPage(2)" href="#">2</a></li>
-
-		<li v-if="page !== 0 && page !== totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
-		<li v-if="page !== 0 && page !== totalPages - 1 && totalPages > 1" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
-		<li v-if="page !== 0 && page !== totalPages - 1 && totalPages > 2" class="page-item"><a class="page-link" v-on:click="loadPage(page + 1)" href="#">{{page + 1}}</a></li>
-
-		<li v-if="page !== 0 && page === totalPages - 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 2)" href="#">{{page - 2}}</a></li>
-		<li v-if="page !== 0 && page === totalPages - 1 && totalPages > 1" class="page-item"><a class="page-link" v-on:click="loadPage(page - 1)" href="#">{{page - 1}}</a></li>
-		<li v-if="page !== 0 && page === totalPages - 1 && totalPages > 2" class="page-item disabled"><a class="page-link" v-on:click="loadPage(page)" href="#">{{page}}</a></li>
-
-		<li class="page-item" v-bind:class="{ disabled: page + 1 == totalPages}">
-		  <a v-on:click="loadPage(page + 1)"  class="page-link" href="#">Next</a>
-		</li>
-	  </ul>
-	</nav>
-
-	  <p class="mt-5 mb-3 text-muted text-center">
-		<span v-if="stats">Storing {{stats.storage}}, {{stats.repos}} repositories, and {{stats.users}} users<br></span>
-		<span v-if="stats">{{stats.bytesPerMinute}}/min, {{stats.reposPerMinute}} repos/min, {{stats.usersPerMinute}} users/min<br></span>
-		<span>Built by <a href="https://github.com/super3">@super3</a>, <a href="https://github.com/montyanderson">@montyanderson</a>, and <a href="https://github.com/calebcase">@calebcase</a><br></span>
-	  </p>
-  </div>
-
-</div>
-
-  <script src="assets/script.js"></script>
+	<script src="assets/script.js"></script>
 </body></html>

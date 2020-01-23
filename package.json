@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "node scripts/worker-token generate 'test token' && mkdir -p user_dumps; rm -rf repos/*; jest --forceExit",
-    "coverage": "jest --forceExit --coverage"
+    "coverage": "jest --forceExit --coverage",
+    "prepare": "browserify -t vueify -e ui/index.js | babel-minify --mangle false > www/assets/script.js",
+    "dev": "watchify -t vueify -e ui/index.js -o www/assets/script.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,7 @@
     "@sindresorhus/df": "^3.1.1",
     "async-zip": "^1.0.2",
     "axios": "^0.19.0",
+    "babel-minify": "^0.5.1",
     "bunyan": "^1.8.12",
     "dateformat": "^3.0.3",
     "execa": "^4.0.0",
@@ -36,14 +39,19 @@
     "pretty-bytes": "^5.3.0",
     "request": "^2.88.0",
     "unzipper": "^0.10.5",
+    "vue": "^2.6.11",
+    "vue-router": "^3.1.5",
     "yauzl-promise": "^2.1.3",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
+    "browserify": "^16.5.0",
     "coveralls": "^3.0.9",
     "istanbul": "^1.1.0-alpha.1",
     "jest": "^24.9.0",
     "supertest": "^4.0.2",
+    "vueify": "^9.4.1",
+    "watchify": "^3.11.1",
     "xo": "^0.25.3"
   },
   "jest": {

@@ -65,3 +65,6 @@ user_dumps/
 repos/
 
 uplink_*
+
+# bundled js
+wwww/assets/script.js
