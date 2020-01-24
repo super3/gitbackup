@@ -148,6 +148,7 @@ router.get('/stats', async ctx => {
 		.reduce((a, b) => a + b, 0);
 
 	ctx.body = {
+		total: Number(await redis.zcard('tracked')),
 		storage: prettyBytes(Number(await redis.get('stats:storage')), n => Number.parseFloat(n).toFixed(1)),
 		files: humanNumber(Number(await redis.get('stats:files')), n => Number.parseFloat(n).toFixed(1)),
 		repos: humanNumber(Number(await redis.get('stats:repos')), n => Number.parseFloat(n).toFixed(1)),

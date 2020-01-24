@@ -6,7 +6,7 @@
 				<h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
 			</a>
 
-			<p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking {{totalUsers}} users/orgs. </p>
+			<p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking <span v-if="stats">{{stats.total}}</span> users/orgs.</p>
 		</div>
 
 		<router-view></router-view>
@@ -24,7 +24,6 @@ const axios = require('axios');
 
 module.exports = {
 	data: () => ({
-		totalUsers: 0,
 		stats: null
 	}),
 	methods: {
