@@ -222,6 +222,8 @@ async function cloneUser({ username, lastSynced }) {
 	const logPath = `${__dirname}/repos/${username}.log`;
 	const storjLogPath = `${pathing.encode(username)}.log`;
 
+	await fs.writeFile(logPath, publicLog);
+
 	storageDelta -= await storjSize(storjLogPath);
 	await storjUpload(logPath, storjLogPath);
 	storageDelta += (await fs.stat(logPath)).size;
