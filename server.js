@@ -60,6 +60,12 @@ router.get('/user/:user/json', async ctx => {
 	ctx.body = JSON.stringify(JSON.parse(raw), null, '\t');
 });
 
+router.get('/user/:user/log', async ctx => {
+	ctx.set('Content-Type', 'text/plain');
+
+	ctx.body = rclone.cat(`${pathing.encode(ctx.params.user)}.log`);
+});
+
 router.get('/repos/:user/:repo', async ctx => {
 	ctx.set('Content-Type', 'application/zip');
 
