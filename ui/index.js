@@ -4,6 +4,7 @@ const Router = require('vue-router');
 const App = require('./components/App.vue');
 const UserList = require('./components/UserList.vue');
 const UserPage = require('./components/UserPage.vue');
+const UserLog = require('./components/UserLog.vue');
 
 Vue.use(Router);
 
@@ -16,6 +17,10 @@ const router = new Router({
 		{
 			path: '/user/:username',
 			component: UserPage
+		},
+		{
+			path: '/user/:username/log',
+			component: UserLog
 		}
 	]
 });
