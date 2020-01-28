@@ -87,6 +87,7 @@ test('/userlist search', async () => {
 
 	expect(response.data.users).toStrictEqual([
 		{
+			"reportedRepos": 0,
 			"username": "super3",
 			"totalRepos": 0,
 			"status": "unsynced"
@@ -103,6 +104,7 @@ test('/userlist search with exact match', async () => {
 
 	expect(response.data.users).toStrictEqual([
 		{
+			"reportedRepos": 0,
 			"username": "super3",
 			"totalRepos": 0,
 			"status": "unsynced"
