@@ -16,11 +16,13 @@
 							</button>
 						</router-link>
 
-						<router-link v-bind:to="'/user/' + username + '/log'">
+						<!--<router-link v-bind:to="'/user/' + username + '/log'">-->
+						<a v-bind:href="'/user/' + username + '/log'">
 							<button class="btn btn-sm btn-outline-dark">
 								View Log
 							</button>
-						</router-link>
+						</a>
+						<!--</router-link>-->
 					</div>
 
 					<div class="col" style="text-align: center; padding-top: 3px;">
