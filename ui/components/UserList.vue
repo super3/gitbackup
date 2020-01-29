@@ -19,13 +19,9 @@
 					<span><i class="fas fa-user"></i> {{user.username | truncateUsername}}</span>
 
 					<div class="btn-group" role="group" aria-label="Basic example">
-
-						<router-link v-bind:to="'/user/' + user.username">
-							<button type="button" class="btn btn-sm btn-outline-dark">
-								<i class="fas fa-code-branch"></i> View {{user.totalRepos}}/{{user.reportedRepos}} Repos
-							</button>
+						<router-link v-bind:to="'/user/' + user.username" tag="button" class="btn btn-sm btn-outline-dark">
+							<i class="fas fa-code-branch"></i> View {{user.totalRepos}}/{{user.reportedRepos}} Repos
 						</router-link>
-
 
 						<button type="button" class="btn btn-sm" v-bind:class="{
 							'btn-outline-success': user.status === 'synced',
