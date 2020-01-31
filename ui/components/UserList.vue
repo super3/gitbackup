@@ -125,7 +125,7 @@ module.exports = {
 	filters: {
 		capitalize,
 		truncateUsername: function (value) {
-			const length = 30;
+			const length = 15;
 
 			if(!value) return '';
 
