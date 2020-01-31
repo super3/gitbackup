@@ -20,7 +20,7 @@
 
 					<div class="btn-group" role="group" aria-label="Basic example">
 						<router-link v-bind:to="'/user/' + user.username" tag="button" class="btn btn-sm btn-outline-dark">
-							<i class="fas fa-code-branch"></i> View {{user.totalRepos}}/{{user.reportedRepos}} Repos
+							<i class="fas fa-code-branch"></i> {{user.totalRepos}}/{{user.reportedRepos}} repos
 						</router-link>
 
 						<button type="button" class="btn btn-sm" v-bind:class="{
@@ -69,6 +69,7 @@
 const axios = require('axios');
 
 const capitalize = require('../lib/capitalize');
+const isMobile = require('../lib/is-mobile');
 
 const CancelToken = axios.CancelToken;
 const urlParams = new URLSearchParams(location.search);
@@ -121,6 +122,9 @@ module.exports = {
 			this.totalPages = totalPages;
 			this.totalUsers = total;
 		}
+	},
+	computed: {
+		isMobile
 	},
 	filters: {
 		capitalize,
