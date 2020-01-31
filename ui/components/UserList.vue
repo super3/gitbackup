@@ -29,7 +29,10 @@
 							'btn-outline-danger': user.status === 'unsynced',
 							'btn-outline-dark': user.status === 'error'
 							}">
-							<i class="fas fa-sync-alt"></i> {{user.status | capitalize}}
+							<i class="fas fa-sync-alt"></i>
+
+							<span v-if="user.status !== 'error' || user.error === 'true'">{{user.status | capitalize}}</span>
+							<span v-else>{{user.error}}</span>
 						</button>
 					</div>
 				</div>

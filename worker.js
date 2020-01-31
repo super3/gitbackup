@@ -109,11 +109,30 @@ async function storjSize(path) {
 	return 0;
 }
 
+class UserError extends Error {
+	constructor(message) {
+		super(message);
+
+		this.name = this.constructor.name;
+	}
+};
+
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
 	let publicLog = '';
 
-	const repos = await getRepos({ username });
+	const repos = await (async () => {
+		try {
+			return getRepos({ username });
+		} catch(error) {
+			if(error.response.status === 404) {
+				throw new UserError('Not Found');
+			}
+
+			throw error;
+		}
+	})();
+
 	const reportedRepos = repos.length;
 
 	let storageDelta = 0;
@@ -316,8 +335,16 @@ async function cloneUser({ username, lastSynced }) {
 		} catch(error) {
 			log.info('user error', error);
 
+			const message = error instanceof UserError
+				? 'Uncaught Failure'
+				: error.message;
+
 			// set user to 'error' status
-			await lockClient.post(`/lock/${username}/error`);
+			await lockClient.post(`/lock/${username}/error`, {
+				params: {
+					message
+				}
+			});
 		}
 	}
 })();

@@ -126,7 +126,8 @@ router.get('/userlist/:page', async ctx => {
 						? 'error'
 						: 'synced'
 					)
-				)
+				),
+		error: await redis.get(`user:${username}:error`)
 	})));
 
 	ctx.body = JSON.stringify({
@@ -246,7 +247,7 @@ router.post('/lock/:username/error', async ctx => {
 	await redis.multi()
 		.del(`lock:${ctx.params.username}`)
 		.zadd('tracked', 'XX', Date.now(), ctx.params.username)
-		.set(`user:${ctx.params.username}:error`, 'true')
+		.set(`user:${ctx.params.username}:error`, ctx.querys.message)
 		.exec();
 
 	ctx.set('Content-Type', 'application/json');
