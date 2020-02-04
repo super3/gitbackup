@@ -247,7 +247,7 @@ router.post('/lock/:username/error', async ctx => {
 	await redis.multi()
 		.del(`lock:${ctx.params.username}`)
 		.zadd('tracked', 'XX', Date.now(), ctx.params.username)
-		.set(`user:${ctx.params.username}:error`, ctx.querys.message)
+		.set(`user:${ctx.params.username}:error`, ctx.query.message)
 		.exec();
 
 	ctx.set('Content-Type', 'application/json');

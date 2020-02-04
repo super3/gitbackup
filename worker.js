@@ -115,7 +115,15 @@ class UserError extends Error {
 
 		this.name = this.constructor.name;
 	}
-};
+}; 
+
+class RepoError extends Error {
+	constructor(message) {
+		super(message);
+
+		this.name = this.constructor.name;
+	}
+}
 
 async function cloneUser({ username, lastSynced }) {
 	// get list of repositories from Github API
