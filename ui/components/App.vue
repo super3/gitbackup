@@ -1,5 +1,7 @@
 <template>
 	<div>
+		<github-login></github-login>
+
 		<div class="text-center mb-4">
 			<a href="/">
 				<img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
@@ -22,6 +24,8 @@
 <script>
 const axios = require('axios');
 
+const GithubLogin = require('./GithubLogin.vue');
+
 module.exports = {
 	data: () => ({
 		stats: null
@@ -32,6 +36,9 @@ module.exports = {
 
 			this.stats = data;
 		}
+	},
+	components: {
+		GithubLogin
 	},
 	async created() {
 		this.loadStats();
