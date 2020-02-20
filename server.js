@@ -210,6 +210,21 @@ router.post('/lock', async ctx => {
 	ctx.body = JSON.stringify(username);
 });
 
+router.post('/login', async ctx => {
+	const {code} = ctx.query;
+
+	const {data} = await axios.post('https://github.com/login/oauth/access_token', {
+		client_id: process.env.CLIENT_ID,
+		client_secret: process.env.CLIENT_SECRET,
+		code,
+		redirect_uri: 'http://localhost:8000/'
+	});
+
+	console.log(data);
+
+	ctx.body = JSON.stringify(data);
+});
+
 router.post('/lock/:username', async ctx => {
 	await redis.expire(`lock:${ctx.params.username}`, 10);
 
