@@ -9,6 +9,7 @@ const search = require('./search');
 const rclone = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 const speedStats = require('./lib/speed-stats');
+const oauth = require('./lib/oauth');
 
 const app = module.exports = new Koa();
 const router = new Router();
@@ -213,16 +214,14 @@ router.post('/lock', async ctx => {
 router.post('/login', async ctx => {
 	const {code} = ctx.query;
 
-	const {data} = await axios.post('https://github.com/login/oauth/access_token', {
-		client_id: process.env.CLIENT_ID,
-		client_secret: process.env.CLIENT_SECRET,
-		code,
-		redirect_uri: 'http://localhost:8000/'
+	const accessToken = await oauth.getAccessToken(code);
+	const user = await oauth.getUser(accessToken);
+
+	console.log(user);
+
+	ctx.body = JSON.stringify({
+		user
 	});
-
-	console.log(data);
-
-	ctx.body = JSON.stringify(data);
 });
 
 router.post('/lock/:username', async ctx => {

@@ -1,10 +1,7 @@
 <template>
 	<div class="login">
-		<a v-if="username === undefined" v-bind:href="authorizeUrl" class="btn btn-large btn-success"><i class="fab fa-github"></i> Login with GitHub</a>
-
-		<div v-else>
-			<i class="fab fa-github"></i> {{username}}
-		</div>
+		<a v-if="user === undefined" v-bind:href="authorizeUrl" v-bind:disabled="loading" class="btn btn-large btn-success"><i class="fab fa-github"></i> Login with GitHub</a>
+		<a v-else class="btn btn-large btn-primary white-text"><i class="fab fa-github"></i> {{user.login}}</a>
 	</div>
 </template>
 
@@ -24,8 +21,9 @@ const axios = require('axios');
 module.exports = {
 	data: () => ({
 		clientId: 'd907d5253811062b6d1f',
-		redirectUri: window.location.href,
-		username: undefined
+		redirectUri: window.location.href.split('?')[0],
+		loading: false,
+		user: undefined
 	}),
 	computed: {
 		authorizeUrl() {
@@ -37,11 +35,16 @@ module.exports = {
 		const code = urlParams.get('code');
 
 		if(typeof code === 'string' && code.length > 0) {
-			const { data: { username } } = await axios.post('/login', undefined, {
+			this.loading = true;
+
+			const { data: { user } } = await axios.post('/login', undefined, {
 				params: {
 					code
 				}
 			});
+
+			this.loading = false;
+			this.user = user;
 		}
 	}
 };
