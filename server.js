@@ -179,6 +179,21 @@ router.get('/worker-stats', async ctx => {
 	}))), null, "\t")
 });
 
+router.post('/login', async ctx => {
+	const {code} = ctx.query;
+
+	const accessToken = await oauth.getAccessToken(code);
+	const user = await oauth.getUser(accessToken);
+
+	console.log(user);
+
+	await redis.zadd('plus-users', 'NX', Date.now(), user.login);
+
+	ctx.body = JSON.stringify({
+		user
+	});
+});
+
 router.use('/lock', async (ctx, next) => {
 	const token = ctx.request.headers['x-worker-token'];
 
@@ -209,19 +224,6 @@ router.post('/lock', async ctx => {
 
 	ctx.set('Content-Type', 'application/json');
 	ctx.body = JSON.stringify(username);
-});
-
-router.post('/login', async ctx => {
-	const {code} = ctx.query;
-
-	const accessToken = await oauth.getAccessToken(code);
-	const user = await oauth.getUser(accessToken);
-
-	console.log(user);
-
-	ctx.body = JSON.stringify({
-		user
-	});
 });
 
 router.post('/lock/:username', async ctx => {
