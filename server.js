@@ -9,6 +9,7 @@ const search = require('./search');
 const rclone = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 const speedStats = require('./lib/speed-stats');
+const oauth = require('./lib/oauth');
 
 const app = module.exports = new Koa();
 const router = new Router();
@@ -176,6 +177,21 @@ router.get('/worker-stats', async ctx => {
 		reposPerMinute: (await speedStats.getWorkerStat('repos-per-minute', worker)).toFixed(3),
 		bytesPerMinute: (await speedStats.getWorkerStat('bytes-per-minute', worker)).toFixed(3)
 	}))), null, "\t")
+});
+
+router.post('/login', async ctx => {
+	const {code} = ctx.query;
+
+	const accessToken = await oauth.getAccessToken(code);
+	const user = await oauth.getUser(accessToken);
+
+	console.log(user);
+
+	await redis.zadd('plus-users', 'NX', Date.now(), user.login);
+
+	ctx.body = JSON.stringify({
+		user
+	});
 });
 
 router.use('/lock', async (ctx, next) => {
