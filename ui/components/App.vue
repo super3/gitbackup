@@ -3,10 +3,10 @@
 		<github-login></github-login>
 
 		<div class="text-center mb-4">
-			<a href="/">
+			<router-link to="/">
 				<img class="mb-4" src="./assets/logo.svg" alt="" width="72" height="72">
 				<h1 class="h3 mb-3 font-weight-normal">GitBackup</h1>
-			</a>
+			</router-link>
 
 			<p>We backup and archive <a href="https://github.com">GitHub</a>. Currently tracking <span v-if="stats">{{stats.total}}</span> users/orgs.</p>
 		</div>
