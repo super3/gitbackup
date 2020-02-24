@@ -6,4 +6,6 @@ const redis = require('../redis');
 	for(const user of users) {
 		await redis.zadd('tracked', 0, user);
 	}
+
+	process.exit(0);
 })();
