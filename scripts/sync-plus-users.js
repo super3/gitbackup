@@ -1,4 +1,4 @@
-const redis = require('../lib/redis');
+const redis = require('../redis');
 
 (async () => {
 	const users = await redis.zrange('plus-users', 0, -1);
