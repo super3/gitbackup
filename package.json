@@ -52,7 +52,7 @@
     "supertest": "^4.0.2",
     "vueify": "^9.4.1",
     "watchify": "^3.11.1",
-    "xo": "^0.25.3"
+    "xo": "^0.27.1"
   },
   "jest": {
     "testRegex": "./test/.*.js$"
