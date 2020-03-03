@@ -128,6 +128,7 @@ router.get('/userlist/:page', async ctx => {
 						: 'synced'
 					)
 				),
+		lastSynced: Number(await redis.zscore('tracked', username)),
 		error: await redis.get(`user:${username}:error`)
 	})));
 

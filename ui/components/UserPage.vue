@@ -44,6 +44,14 @@
 				</div>
 			</div>
 
+			<div class="col" style="text-align: center; padding-top: 10px;">
+				<p>
+					last synced
+					<span v-if="user.lastSynced > 0">{{user.lastSynced | relativeDate }}</span>
+					<span v-else>never</span>
+				</p>
+			</div>
+
 			<ul class="list-group list-group-flush" style="padding-bottom: 0;">
 				<li class="list-group-item" v-for="repo in repoList">
 					{{repo}}
@@ -78,6 +86,7 @@
 
 <script>
 const axios = require('axios');
+const relativeDate = require('relative-date');
 
 const capitalize = require('../lib/capitalize');
 
@@ -101,10 +110,12 @@ module.exports = {
 	data: (() => ({
 		cloneRepo: false,
 		repoList: false,
-		user: false
+		user: false,
+		lastSynced: false
 	})),
 	filters: {
-		capitalize
+		capitalize,
+		relativeDate
 	},
 	async created() {
 		const {data: {users, exists, total, totalPages}} = await axios.get(`/userlist/0`, {
