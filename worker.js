@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const {createWriteStream} = require('fs');
 const axios = require('axios');
 const execa = require('execa');
+const Nile = require('nile');
 const log = require('./lib/worker-logger');
 const storj = require('./lib/rclone');
 const pathing = require('./lib/pathing');
@@ -14,6 +15,10 @@ if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
 	throw new Error('No API keys set!');
 }
 
+const nile = new Nile('gitbackup.org');
+
+const nileLog = log => nile.pushChunk(`worker${typeof process.env.pm_id === 'string' ? `-${process.env.pm_id}` : ''}`, log);
+
 async function getGithubEndpoint(...args) {
 	try {
 		return await axios.get(...args);
@@ -24,6 +29,8 @@ async function getGithubEndpoint(...args) {
 			const timeout = ((Number(error.response.headers['x-ratelimit-reset']) * 1000) - Date.now()) + (Math.random() * 10000);
 
 			log.warn(`Rate limit reached. Waiting ${Math.floor(timeout / 1000)} seconds.`);
+			nileLog(`Rate limit reached. Waiting ${Math.floor(timeout / 1000)} seconds.`);
+
 			await new Promise(resolve => setTimeout(resolve, timeout));
 
 			// retry
@@ -91,6 +98,8 @@ async function storjUpload(source, target) {
 
 	if (err != null || retries === 0) {
 		log.error('Failed to copy to Storj', err);
+		nileLog('Failed to copy to Storj');
+
 		throw new Error('Failed to copy to Storj');
 	}
 }
@@ -115,7 +124,7 @@ class UserError extends Error {
 
 		this.name = this.constructor.name;
 	}
-}; 
+};
 
 class RepoError extends Error {
 	constructor(message) {
@@ -147,6 +156,7 @@ async function cloneUser({ username, lastSynced }) {
 	let totalUpload = 0;
 
 	log.info(username, 'has', repos.length, 'repositories');
+	nileLog(`${username} has ${repos.length} repositories`);
 
 	let totalRepos = 0;
 
@@ -170,12 +180,16 @@ async function cloneUser({ username, lastSynced }) {
 		// skip if repository hasn't been updated since last sync
 		if(lastUpdated < lastSynced) {
 			publicLog += `repository hasn't been updated since last sync. skipping\n`;
+			nileLog(`repository hasn't been updated since last sync. skipping`);
+
 			continue;
 		}
 
 		// skip if repository is too big
 		if(repo.size > 4250000) {
 			publicLog += `repository is too big (${repo.size}). skipping\n`;
+			nileLog(`repository is too big (${repo.size}). skipping`);
+
 			continue;
 		}
 
@@ -191,6 +205,7 @@ async function cloneUser({ username, lastSynced }) {
 		// Create bundle:
 		log.info(repo.full_name, 'cloning');
 		publicLog += `cloning\n`;
+		nileLog(`${repo.full_name} cloning`);
 
 		try {
 			await execa('git', ['clone', '--mirror', repo.git_url, repoPath]);
@@ -206,6 +221,7 @@ async function cloneUser({ username, lastSynced }) {
 		// Download zip:
 		log.info(repo.full_name, 'downloading zip');
 		publicLog += 'downloading zip\n';
+		nileLog(`${repo.full_name} downloading zip`);
 
 		const {data} = await axios.get(`${repo.html_url}/archive/master.zip`, {
 			responseType: 'stream',
