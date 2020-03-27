@@ -13,7 +13,7 @@ const getKeyPair = () => keys[Math.floor(Math.random() * keys.length)];
 
 const nile = new Nile('gitbackup.org');
 
-const nileLog = log => nile.pushChunk(`worker${typeof process.env.pm_id === 'string' ? `-${process.env.pm_id}` : ''}`, log);
+const nileLog = log => nile.pushChunk(`${os.hostname()}-${process.env.pm_id}`, log);
 
 async function getGithubEndpoint(...args) {
 	try {
