@@ -8,12 +8,8 @@ const log = require('./lib/worker-logger');
 const storj = require('./lib/rclone');
 const pathing = require('./lib/pathing');
 
-const client_id = process.env.CLIENT_ID;
-const client_secret = process.env.CLIENT_SECRET;
-
-if(typeof client_id !== 'string' || typeof client_secret !== 'string') {
-	throw new Error('No API keys set!');
-}
+const keys = JSON.parse(process.env.GITHUB_KEYS);
+const getKeyPair = () => keys[Math.floor(Math.random() * keys.length)];
 
 const nile = new Nile('gitbackup.org');
 
@@ -46,6 +42,8 @@ async function getRepos({ username }) {
 
 	// pull repository pages
 	for(let i = 1; ; i++) {
+		const [ client_id, client_secret ] = getKeyPair();
+
 		const {data} = await getGithubEndpoint(`https://api.github.com/users/${username}/repos`, {
 			params: {
 				page: i,
