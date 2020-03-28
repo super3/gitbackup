@@ -29,7 +29,7 @@
     "execa": "^4.0.0",
     "gunzip-file": "^0.1.1",
     "human-number": "^1.0.4",
-    "ioredis": "^4.14.1",
+    "ioredis": "^4.16.1",
     "iterable-ndjson": "^1.1.0",
     "koa": "^2.11.0",
     "koa-router": "^7.4.0",
