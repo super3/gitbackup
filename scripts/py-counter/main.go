@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
+
 	"os"
 	"strconv"
 	"strings"
@@ -28,6 +30,11 @@ func downloadZip(file string, project *uplink.Project, bucket string, key string
 	repos++
 
 	stat, err := project.StatObject(context.Background(), bucket, key)
+
+	if err != nil {
+		return
+	}
+
 	orPanic(err)
 
 	if stat.System.ContentLength > 1000000 {
@@ -99,9 +106,16 @@ func worker(zips chan string, file string, project *uplink.Project, bucket strin
 }
 
 func main() {
-	dat, err := ioutil.ReadFile(".access")
+	accessFile, err := ioutil.ReadFile("access.txt")
 
-	access, err := uplink.ParseAccess("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Convert []byte to string and print to screen
+	accessString := string(accessFile)
+
+	access, err := uplink.ParseAccess(accessString)
 
 	orPanic(err)
 
