@@ -113,7 +113,7 @@ func main() {
 	}
 
 	// Convert []byte to string and print to screen
-	accessString := string(accessFile)
+	accessString := strings.TrimSpace(string(accessFile))
 
 	access, err := uplink.ParseAccess(accessString)
 
