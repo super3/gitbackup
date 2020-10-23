@@ -50,7 +50,7 @@
     "browserify": "^16.5.0",
     "coveralls": "^3.0.9",
     "istanbul": "^1.1.0-alpha.1",
-    "jest": "^24.9.0",
+    "jest": "^26.6.1",
     "supertest": "^4.0.2",
     "vueify": "^9.4.1",
     "watchify": "^3.11.1",
