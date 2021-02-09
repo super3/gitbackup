@@ -256,6 +256,7 @@ async function cloneUser({ username, lastSynced }) {
 		totalUpload += (await fs.stat(repoZipPath)).size;
 
                 // If this is us-central-1; mirror it to us2 for testing.
+		/*
 		if (storjPath.startsWith("us-central-1:")) {
 			const storjPath2 = storjPath.replace(/^us-central-1:/, 'us2:')
 			const storjBundlePath2 = `${storjPath2}/${repo.name}.bundle`;
@@ -265,6 +266,7 @@ async function cloneUser({ username, lastSynced }) {
 			await storjUpload(repoBundlePath, storjBundlePath2);
 			await storjUpload(repoZipPath, storjZipPath2);
 		}
+		*/
 
 		log.info(repo.full_name, 'cleaning up');
 		publicLog += 'cleaning up\n';
