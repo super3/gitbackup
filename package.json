@@ -22,7 +22,7 @@
   "dependencies": {
     "@sindresorhus/df": "^3.1.1",
     "async-zip": "^1.0.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "babel-minify": "^0.5.1",
     "bunyan": "^1.8.12",
     "dateformat": "^3.0.3",
